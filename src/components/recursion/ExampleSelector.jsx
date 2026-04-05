@@ -2,7 +2,7 @@ import React from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { BookOpen, Sparkles } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export const EXAMPLES = [
@@ -96,18 +96,20 @@ export const EXAMPLES = [
 ]
 
 const difficultyColors = {
-  Beginner: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  Intermediate: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  Advanced: 'bg-red-500/10 text-red-400 border-red-500/30',
+  Beginner: 'border-tokyo-border bg-tokyo-deep text-tokyo-green',
+  Intermediate: 'border-tokyo-border bg-tokyo-deep text-tokyo-yellow',
+  Advanced: 'border-tokyo-border bg-tokyo-deep text-tokyo-red',
 }
 
 export default function ExampleSelector({ selectedExample, onSelect }) {
   return (
-    <Card className="bg-slate-900/95 backdrop-blur-xl border-slate-700/50 p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <BookOpen className="w-4 h-4 text-indigo-400" />
-        <span className="text-sm font-medium text-slate-200">Example Problems</span>
+    <Card className="app-panel overflow-hidden">
+      <div className="app-panel-head flex items-center gap-2">
+        <BookOpen className="h-4 w-4 text-tokyo-blue" />
+        <span className="text-sm font-semibold text-tokyo-fg">Example problems</span>
+        <span className="ml-auto text-xs font-medium text-tokyo-comment">Built-in</span>
       </div>
+      <div className="p-4">
 
       <div className="flex flex-wrap gap-2">
         {EXAMPLES.map((example, index) => (
@@ -120,13 +122,12 @@ export default function ExampleSelector({ selectedExample, onSelect }) {
             <Button
               variant={selectedExample?.id === example.id ? 'default' : 'outline'}
               onClick={() => onSelect(example)}
-              className={`relative group transition-all duration-300 ${
+              className={`relative transition-colors ${
                 selectedExample?.id === example.id
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent'
-                  : 'border-slate-700 text-slate-300 hover:border-indigo-500/50 hover:bg-slate-800/50'
+                  ? 'border-tokyo-blue bg-tokyo-blue text-white hover:brightness-110'
+                  : 'border-tokyo-border bg-tokyo-deep text-tokyo-fg hover:bg-tokyo-highlight'
               }`}
             >
-              {selectedExample?.id === example.id && <Sparkles className="w-3 h-3 mr-2" />}
               {example.name}
               <Badge variant="outline" className={`ml-2 text-xs ${difficultyColors[example.difficulty]}`}>
                 {example.difficulty}
@@ -140,14 +141,15 @@ export default function ExampleSelector({ selectedExample, onSelect }) {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="mt-4 p-3 bg-slate-800/50 rounded-lg"
+          className="mt-4 rounded-md border border-tokyo-border bg-tokyo-deep p-3"
         >
-          <p className="text-sm text-slate-400">{selectedExample.description}</p>
-          <p className="text-xs text-slate-500 mt-1 font-mono">
+          <p className="text-sm leading-relaxed text-tokyo-muted">{selectedExample.description}</p>
+          <p className="mt-2 font-mono text-xs text-tokyo-comment">
             Input: {JSON.stringify(selectedExample.input)}
           </p>
         </motion.div>
       )}
+      </div>
     </Card>
   )
 }
