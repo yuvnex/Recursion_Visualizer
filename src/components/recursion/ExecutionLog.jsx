@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Terminal, ArrowRight, ArrowLeft } from 'lucide-react'
+import { ListOrdered, ArrowRight, ArrowLeft } from 'lucide-react'
 
 export default function ExecutionLog({ logs }) {
   const scrollRef = useRef(null)
@@ -13,35 +13,35 @@ export default function ExecutionLog({ logs }) {
   }, [logs])
 
   return (
-    <Card className="bg-slate-900/95 backdrop-blur-xl border-slate-700/50 overflow-hidden h-full flex flex-col">
-      <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-slate-700/50">
-        <Terminal className="w-4 h-4 text-indigo-400" />
-        <span className="text-sm font-medium text-slate-200">Execution Log</span>
-        <span className="ml-auto text-xs text-slate-500">{logs.length} events</span>
+    <Card className="app-panel flex h-full flex-col overflow-hidden">
+      <div className="app-panel-head flex items-center gap-2">
+        <ListOrdered className="h-4 w-4 text-tokyo-blue" />
+        <span className="text-sm font-semibold text-tokyo-fg">Execution log</span>
+        <span className="ml-auto text-xs text-tokyo-comment">{logs.length} events</span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-auto p-3 space-y-1 font-mono text-xs">
+      <div ref={scrollRef} className="flex-1 space-y-1 overflow-auto bg-tokyo-night p-2 font-mono text-xs">
         <AnimatePresence>
           {logs.map((log, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`flex items-start gap-2 p-2 rounded ${
-                log.type === 'call' ? 'bg-indigo-500/10' :
-                log.type === 'return' ? 'bg-emerald-500/10' :
-                log.type === 'base' ? 'bg-amber-500/10' : 'bg-slate-800/50'
+              className={`flex items-start gap-2 rounded border p-2 ${
+                log.type === 'call' ? 'border-tokyo-blue/40 bg-tokyo-storm' :
+                log.type === 'return' ? 'border-tokyo-green/40 bg-tokyo-storm' :
+                log.type === 'base' ? 'border-tokyo-orange/40 bg-tokyo-deep' : 'border-tokyo-border bg-tokyo-deep'
               }`}
             >
-              <span className="text-slate-500 w-6">{index + 1}.</span>
+              <span className="w-6 shrink-0 text-tokyo-comment">{index + 1}.</span>
               {log.type === 'call' || log.type === 'base'
-                ? <ArrowRight className="w-3 h-3 mt-0.5 text-indigo-400 flex-shrink-0" />
-                : <ArrowLeft className="w-3 h-3 mt-0.5 text-emerald-400 flex-shrink-0" />
+                ? <ArrowRight className="mt-0.5 h-3 w-3 shrink-0 text-tokyo-blue" />
+                : <ArrowLeft className="mt-0.5 h-3 w-3 shrink-0 text-tokyo-green" />
               }
               <span className={
-                log.type === 'call' ? 'text-indigo-300' :
-                log.type === 'return' ? 'text-emerald-300' :
-                log.type === 'base' ? 'text-amber-300' : 'text-slate-400'
+                log.type === 'call' ? 'text-tokyo-blue' :
+                log.type === 'return' ? 'text-tokyo-green' :
+                log.type === 'base' ? 'text-tokyo-orange' : 'text-tokyo-muted'
               }>
                 {log.message}
               </span>
@@ -50,8 +50,8 @@ export default function ExecutionLog({ logs }) {
         </AnimatePresence>
 
         {logs.length === 0 && (
-          <div className="flex items-center justify-center h-full text-slate-500">
-            <p>Run visualization to see execution log</p>
+          <div className="flex h-full items-center justify-center text-tokyo-comment">
+            <p className="text-xs">Run or step to see events</p>
           </div>
         )}
       </div>

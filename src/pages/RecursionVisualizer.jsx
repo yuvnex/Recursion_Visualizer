@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Info } from 'lucide-react'
+import { Brackets, Info } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -268,32 +268,43 @@ export default function RecursionVisualizer() {
   // ── render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative z-10 p-4 md:p-6 max-w-[1800px] mx-auto">
+    <div className="app-shell font-sans selection:bg-tokyo-magenta/25 selection:text-tokyo-fg">
+      <div className="relative z-10 mx-auto max-w-[1840px] px-4 py-6 md:px-8 md:py-8">
         {/* Header */}
-        <motion.header className="mb-6" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">Recursion Visualizer</h1>
-              <p className="text-sm text-slate-400">Understand recursion through interactive visualization</p>
+        <motion.header
+          className="mb-8"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-tokyo-border bg-tokyo-storm">
+                <Brackets className="h-5 w-5 text-tokyo-blue" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-semibold tracking-tight text-tokyo-fg sm:text-[1.65rem]">
+                    Recursion Visualizer
+                  </h1>
+                  <span className="app-pill">Runs offline</span>
+                </div>
+                <p className="mt-1 max-w-xl text-sm leading-relaxed text-tokyo-muted">
+                  Step through call trees, the stack, and execution logs. No sign-in and no external APIs.
+                </p>
+              </div>
             </div>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="ml-2 p-1.5 rounded-full bg-slate-800/50 hover:bg-slate-800 transition-colors">
-                    <Info className="w-4 h-4 text-slate-400" />
+                  <button
+                    type="button"
+                    className="app-btn-secondary self-start rounded-md p-2 text-tokyo-comment hover:text-tokyo-fg"
+                  >
+                    <Info className="h-5 w-5" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>Select an example, then click Run or Step to visualize how recursive calls work.</p>
+                <TooltipContent side="bottom" className="max-w-xs border border-tokyo-border bg-tokyo-storm text-tokyo-fg shadow-lg">
+                  <p>Choose an example or paste Java, then use Run or Step to walk through calls and returns.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -301,12 +312,12 @@ export default function RecursionVisualizer() {
         </motion.header>
 
         {/* Mode Toggle */}
-        <motion.div className="mb-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <ModeToggle mode={mode} onModeChange={handleModeChange} />
         </motion.div>
 
         {/* Example Selector or Custom Code Panel */}
-        <motion.div className="mb-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+        <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <AnimatePresence mode="wait">
             {mode === 'examples' ? (
               <motion.div key="examples" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
@@ -322,7 +333,7 @@ export default function RecursionVisualizer() {
 
         {/* Control Panel */}
         {showVisualizer && (
-          <motion.div className="mb-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <ControlPanel
               isRunning={isRunning} isPaused={isPaused} speed={speed}
               onStart={handleStart} onPause={handlePause} onResume={handleResume}
@@ -334,18 +345,23 @@ export default function RecursionVisualizer() {
 
         {/* Main Visualizer Grid */}
         {showVisualizer && (
-          <motion.div className="grid grid-cols-1 lg:grid-cols-12 gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-            <div className="lg:col-span-4 h-[500px]">
+          <motion.div
+            className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="lg:col-span-4 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
               <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
             </div>
-            <div className="lg:col-span-5 h-[500px]">
+            <div className="lg:col-span-5 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
               <RecursionTree nodes={nodes} currentNodeId={currentNodeId} executionPhase={executionPhase} />
             </div>
-            <div className="lg:col-span-3 flex flex-col gap-4 h-[500px]">
+            <div className="lg:col-span-3 flex flex-col gap-5 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
               <div className="flex-1 min-h-0">
                 <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
               </div>
-              <div className="h-48">
+              <div className="h-44 min-h-[11rem] shrink-0">
                 <ExecutionLog logs={logs} />
               </div>
             </div>
@@ -353,13 +369,22 @@ export default function RecursionVisualizer() {
         )}
 
         {/* Footer */}
-        <motion.footer className="mt-6 text-center text-sm text-slate-500" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+        <motion.footer
+          className="mt-10 border-t border-tokyo-border pt-8 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
           {mode === 'custom' && !customCodeData && !isAnalyzing && (
-            <div className="bg-slate-800/30 rounded-lg p-4 mb-4">
-              <p className="text-slate-400">👆 Paste your recursive code above and click "Analyze & Visualize" to get started</p>
+            <div className="app-panel mb-6 p-4 text-left sm:text-center">
+              <p className="text-sm text-tokyo-muted">
+                Paste your recursive Java above, then choose <span className="font-medium text-tokyo-fg">Analyze &amp; Visualize</span> to load the trace.
+              </p>
             </div>
           )}
-          <p>Built to help students understand recursion step by step</p>
+          <p className="text-xs text-tokyo-comment">
+            Runs entirely in your browser. No API keys.
+          </p>
         </motion.footer>
       </div>
     </div>
