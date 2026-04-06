@@ -36,6 +36,38 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
     return root
   }, [nodes])
 
+  const layout = useMemo(() => {
+    if (!treeData) return null
+
+    // Deterministic tree layout: compute subtree widths so parent nodes
+    // stay centered above their children across varying branching factors.
+    const LEAF_W = 180
+    const GAP = 32 // matches gap-8
+
+    const widthById = {}
+    const childSpanById = {}
+
+    const measure = (node) => {
+      if (!node) return LEAF_W
+      const children = node.children ?? []
+      if (children.length === 0) {
+        widthById[node.id] = LEAF_W
+        childSpanById[node.id] = 0
+        return LEAF_W
+      }
+
+      const childWidths = children.map(measure)
+      const span = childWidths.reduce((a, b) => a + b, 0) + GAP * Math.max(children.length - 1, 0)
+      const w = Math.max(LEAF_W, span)
+      widthById[node.id] = w
+      childSpanById[node.id] = span
+      return w
+    }
+
+    const rootWidth = measure(treeData)
+    return { rootWidth, widthById, childSpanById, leafWidth: LEAF_W, gap: GAP }
+  }, [treeData])
+
   const getNodeStyle = (node) => {
     const isActive = node.id === currentNodeId
 
@@ -83,6 +115,9 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
   const renderNode = (node, depth = 0) => {
     if (!node) return null
 
+    const nodeWidth = layout?.widthById?.[node.id] ?? 180
+    const childSpan = layout?.childSpanById?.[node.id] ?? 0
+
     const style = getNodeStyle(node)
     const hasChildren = node.children && node.children.length > 0
 
@@ -90,6 +125,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
       <motion.div
         key={node.id}
         className="flex flex-col items-center"
+        style={{ width: `${nodeWidth}px` }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: depth * 0.08, duration: 0.4, ease: 'easeOut' }}
@@ -133,14 +169,11 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
               origin="top"
             />
 
-            {/* Horizontal Bar (for multiple children) */}
-            {node.children.length > 1 && (
+            {/* Horizontal Bar (exactly spans the children group) */}
+            {node.children.length > 1 && childSpan > 0 && (
               <motion.div
                 className="h-px bg-tokyo-border"
-                style={{
-                  width: `${Math.max(node.children.length * 140, 120)}px`,
-                  maxWidth: '100%',
-                }}
+                style={{ width: `${childSpan}px` }}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: depth * 0.08 + 0.3 }}
@@ -149,23 +182,31 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
             )}
 
             {/* Children Container */}
-            <div className="flex gap-8 justify-center mt-2">
+            <div className="mt-2">
               <AnimatePresence mode="popLayout">
-                {node.children.map((child) => (
-                  <div key={child.id} className="flex flex-col items-center">
-                    {/* Vertical Connector for each child */}
-                    {node.children.length > 1 && (
-                      <motion.div
-                        className="h-4 w-0.5 bg-tokyo-border"
-                        initial={{ scaleY: 0 }}
-                        animate={{ scaleY: 1 }}
-                        transition={{ delay: depth * 0.08 + 0.4 }}
-                        origin="top"
-                      />
-                    )}
-                    {renderNode(child, depth + 1)}
-                  </div>
-                ))}
+                <div
+                  className="grid items-start justify-center"
+                  style={{
+                    gridTemplateColumns: node.children.map((c) => `${layout?.widthById?.[c.id] ?? 180}px`).join(' '),
+                    columnGap: `${layout?.gap ?? 32}px`,
+                  }}
+                >
+                  {node.children.map((child) => (
+                    <div key={child.id} className="flex flex-col items-center">
+                      {/* Vertical Connector for each child */}
+                      {node.children.length > 1 && (
+                        <motion.div
+                          className="h-4 w-0.5 bg-tokyo-border"
+                          initial={{ scaleY: 0 }}
+                          animate={{ scaleY: 1 }}
+                          transition={{ delay: depth * 0.08 + 0.4 }}
+                          origin="top"
+                        />
+                      )}
+                      {renderNode(child, depth + 1)}
+                    </div>
+                  ))}
+                </div>
               </AnimatePresence>
             </div>
           </>
@@ -189,7 +230,10 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
       <div className="flex-1 overflow-auto bg-tokyo-night p-6">
         <AnimatePresence>
           {treeData ? (
-            <div className="flex justify-center min-w-max mx-auto">
+            <div
+              className="mx-auto flex justify-center"
+              style={{ minWidth: layout?.rootWidth ? `${layout.rootWidth}px` : 'max-content' }}
+            >
               {renderNode(treeData, 0)}
             </div>
           ) : (
