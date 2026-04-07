@@ -1,11 +1,3 @@
-/**
- * RecursionTree.jsx
- *
- * Visualizes the recursion tree in an interactive, animated format.
- * Shows parent-child relationships, execution flow, and return values.
- * Fully structured and centered for optimal visibility.
- */
-
 import React, { useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -15,7 +7,6 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
   const treeData = useMemo(() => {
     if (!nodes || nodes.length === 0) return null
 
-    // Build tree structure from nodes
     const nodeMap = {}
     nodes.forEach(node => {
       nodeMap[node.id] = {
@@ -39,10 +30,8 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
   const layout = useMemo(() => {
     if (!treeData) return null
 
-    // Deterministic tree layout: compute subtree widths so parent nodes
-    // stay centered above their children across varying branching factors.
     const LEAF_W = 180
-    const GAP = 32 // matches gap-8
+    const GAP = 32
 
     const widthById = {}
     const childSpanById = {}
@@ -130,20 +119,17 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: depth * 0.08, duration: 0.4, ease: 'easeOut' }}
       >
-        {/* Node Card */}
         <motion.div
           className={`relative rounded-md px-3 py-2 font-mono text-sm transition-colors ${style.container}`}
           whileHover={{ scale: 1.02 }}
           layout
         >
-          {/* Depth Badge */}
           <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-tokyo-border bg-tokyo-night text-[10px] font-bold text-tokyo-muted">
             {depth}
           </div>
 
           <div className={`font-semibold ${style.text}`}>{node.label}</div>
 
-          {/* Return Value */}
           {node.returned && node.returnValue !== undefined && (
             <motion.div
               className={`text-xs mt-1 flex items-center justify-center gap-1 ${style.text}`}
@@ -157,10 +143,8 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
           )}
         </motion.div>
 
-        {/* Children Connections */}
         {hasChildren && (
           <>
-            {/* Vertical Stem */}
             <motion.div
               className="h-6 w-0.5 bg-tokyo-border"
               initial={{ scaleY: 0 }}
@@ -169,7 +153,6 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
               origin="top"
             />
 
-            {/* Horizontal Bar (exactly spans the children group) */}
             {node.children.length > 1 && childSpan > 0 && (
               <motion.div
                 className="h-px bg-tokyo-border"
@@ -181,7 +164,6 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
               />
             )}
 
-            {/* Children Container */}
             <div className="mt-2">
               <AnimatePresence mode="popLayout">
                 <div
@@ -193,7 +175,6 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
                 >
                   {node.children.map((child) => (
                     <div key={child.id} className="flex flex-col items-center">
-                      {/* Vertical Connector for each child */}
                       {node.children.length > 1 && (
                         <motion.div
                           className="h-4 w-0.5 bg-tokyo-border"

@@ -1,30 +1,7 @@
-/**
- * llmClient.js — OFFLINE ONLY
- *
- * Analyzes and traces recursive code entirely locally in the browser.
- * NO external API keys or dependencies required.
- *
- * How it works:
- *  1. Detect the recursive function name and entry call from code
- *  2. Transpile non-JS languages (Python, Java, C, C++) to JavaScript
- *  3. Instrument the function to record every call/return
- *  4. Execute in sandboxed context and return execution trace
- */
-
 import { runCodeLocally } from '@/lib/codeRunner'
-
-/**
- * Analyzes recursive code and returns execution trace.
- * Works entirely offline without any external dependencies.
- *
- * @param {string} code - Source code (JavaScript, Python, Java, C, C++)
- * @param {string} language - Programming language
- * @returns {Promise<{steps, functionName, invocation}>} Execution trace
- */
 export const llmClient = {
   async analyzeCode(code, language = 'javascript') {
     try {
-      // Run entirely locally — no API calls, no external dependencies
       const result = runCodeLocally(code, language)
       console.log(`[localExecution] traced "${result.funcName}" — ${result.steps.length} steps`)
       return {
