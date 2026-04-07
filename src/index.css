@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Tokyo Night — semantic tokens for shadcn (border/input/background, etc.) */
   :root {
     --background: 235 19% 13%;
     --foreground: 226 71% 88%;
@@ -82,7 +81,6 @@
   }
 }
 
-/* Tokyo Night (VS Code) — flat panels, no glass */
 @layer components {
   .app-shell {
     @apply min-h-screen bg-tokyo-night text-tokyo-fg;

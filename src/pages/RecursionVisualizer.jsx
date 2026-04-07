@@ -18,8 +18,6 @@ import ExecutionLog from '@/components/recursion/ExecutionLog'
 import ModeToggle from '@/components/recursion/ModeToggle'
 import CustomCodePanel from '@/components/recursion/CustomCodePanel'
 
-// ─── built-in simulators ──────────────────────────────────────────────────────
-
 const simulators = {
   factorial: (n) => {
     const steps = []
@@ -108,8 +106,6 @@ const simulators = {
   },
 }
 
-// ─── component ────────────────────────────────────────────────────────────────
-
 export default function RecursionVisualizer() {
   const [mode, setMode] = useState('examples')
   const [selectedExample, setSelectedExample] = useState(EXAMPLES[0])
@@ -137,8 +133,6 @@ export default function RecursionVisualizer() {
 
   useEffect(() => { isPausedRef.current = isPaused }, [isPaused])
 
-  // ── reset ──────────────────────────────────────────────────────────────────
-
   const handleReset = useCallback(() => {
     clearTimeout(animationRef.current)
     setNodes([]); setStack([]); setLogs([])
@@ -147,8 +141,6 @@ export default function RecursionVisualizer() {
     setCurrentStep(0); setTotalSteps(0)
     stepsRef.current = []; stepIndexRef.current = 0
   }, [])
-
-  // ── execute one step ───────────────────────────────────────────────────────
 
   const executeStep = useCallback((step) => {
     if (step.type === 'call') {
@@ -168,8 +160,6 @@ export default function RecursionVisualizer() {
     }
   }, [])
 
-  // ── animation loop ─────────────────────────────────────────────────────────
-
   const runAnimation = useCallback(() => {
     if (stepIndexRef.current >= stepsRef.current.length) {
       setIsComplete(true); setIsRunning(false); setExecutionPhase(null); setCurrentNodeId(null)
@@ -182,8 +172,6 @@ export default function RecursionVisualizer() {
     animationRef.current = setTimeout(runAnimation, 1000 / speed)
   }, [speed, executeStep])
 
-  // ── start / pause / resume / step ─────────────────────────────────────────
-
   const getSteps = useCallback(() => {
     if (mode === 'custom' && customCodeData) return customCodeData.steps
     const sim = simulators[selectedExample.id]
@@ -194,17 +182,23 @@ export default function RecursionVisualizer() {
     handleReset()
     const steps = getSteps()
     stepsRef.current = steps; stepIndexRef.current = 0
+    isPausedRef.current = false
     setTotalSteps(steps.length); setIsRunning(true); setIsPaused(false)
     setTimeout(runAnimation, 100)
   }, [handleReset, getSteps, runAnimation])
 
   const handlePause = useCallback(() => {
+    isPausedRef.current = true
     setIsPaused(true); clearTimeout(animationRef.current)
   }, [])
 
   const handleResume = useCallback(() => {
-    setIsPaused(false); runAnimation()
-  }, [runAnimation])
+    if (!isRunning || isComplete) return
+    isPausedRef.current = false
+    setIsPaused(false)
+    clearTimeout(animationRef.current)
+    animationRef.current = setTimeout(runAnimation, 0)
+  }, [isRunning, isComplete, runAnimation])
 
   const handleStep = useCallback(() => {
     if (!isRunning) {
@@ -220,13 +214,10 @@ export default function RecursionVisualizer() {
     setCurrentStep(stepIndexRef.current)
   }, [isRunning, getSteps, executeStep])
 
-  // ── custom code analysis ───────────────────────────────────────────────────
-
   const analyzeCustomCode = useCallback(async ({ language, code }) => {
     setIsAnalyzing(true)
     setAnalysisError(null)
     try {
-      // Use the offline execution system (no API calls)
       const result = await llmClient.analyzeCode(code, language)
 
       if (!result.steps || result.steps.length === 0) {
@@ -249,8 +240,6 @@ export default function RecursionVisualizer() {
     }
   }, [])
 
-  // ── mode / example change ──────────────────────────────────────────────────
-
   const handleSelectExample = useCallback((example) => {
     setSelectedExample(example); setCode(example.code)
     setCustomCodeData(null); setAnalysisError(null); handleReset()
@@ -265,12 +254,9 @@ export default function RecursionVisualizer() {
 
   const showVisualizer = mode === 'examples' || !!customCodeData
 
-  // ── render ─────────────────────────────────────────────────────────────────
-
   return (
     <div className="app-shell font-sans selection:bg-tokyo-magenta/25 selection:text-tokyo-fg">
       <div className="relative z-10 mx-auto max-w-[1840px] px-4 py-6 md:px-8 md:py-8">
-        {/* Header */}
         <motion.header
           className="mb-8"
           initial={{ opacity: 0, y: -8 }}
@@ -311,12 +297,10 @@ export default function RecursionVisualizer() {
           </div>
         </motion.header>
 
-        {/* Mode Toggle */}
         <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <ModeToggle mode={mode} onModeChange={handleModeChange} />
         </motion.div>
 
-        {/* Example Selector or Custom Code Panel */}
         <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <AnimatePresence mode="wait">
             {mode === 'examples' ? (
@@ -331,7 +315,6 @@ export default function RecursionVisualizer() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Control Panel */}
         {showVisualizer && (
           <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <ControlPanel
@@ -343,7 +326,6 @@ export default function RecursionVisualizer() {
           </motion.div>
         )}
 
-        {/* Main Visualizer Grid */}
         {showVisualizer && (
           <motion.div
             className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-6"
@@ -368,7 +350,6 @@ export default function RecursionVisualizer() {
           </motion.div>
         )}
 
-        {/* Footer */}
         <motion.footer
           className="mt-10 border-t border-tokyo-border pt-8 text-center"
           initial={{ opacity: 0 }}
