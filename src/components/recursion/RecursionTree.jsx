@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitBranch, ArrowDown } from 'lucide-react'
+import { GitBranch, ArrowDown, Maximize2, Minimize2 } from 'lucide-react'
 
-export default function RecursionTree({ nodes, currentNodeId, executionPhase }) {
+export default function RecursionTree({ nodes, currentNodeId, executionPhase, isExpanded = false, onToggleExpand }) {
   const treeData = useMemo(() => {
     if (!nodes || nodes.length === 0) return null
 
@@ -206,6 +206,15 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase }) 
             {nodes?.length} calls
           </span>
         )}
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          className={`${treeData ? '' : 'ml-auto '}app-btn-secondary rounded-md p-1.5`}
+          aria-label={isExpanded ? 'Minimize recursion tree' : 'Maximize recursion tree'}
+          title={isExpanded ? 'Minimize' : 'Maximize'}
+        >
+          {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
       </div>
 
       <div className="flex-1 overflow-auto bg-tokyo-night p-6">
