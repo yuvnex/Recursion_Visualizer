@@ -125,6 +125,7 @@ export default function RecursionVisualizer() {
   const [customCodeData, setCustomCodeData] = useState(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisError, setAnalysisError] = useState(null)
+  const [isTreeExpanded, setIsTreeExpanded] = useState(false)
 
   const stepsRef = useRef([])
   const stepIndexRef = useRef(0)
@@ -132,6 +133,12 @@ export default function RecursionVisualizer() {
   const isPausedRef = useRef(false)
 
   useEffect(() => { isPausedRef.current = isPaused }, [isPaused])
+  useEffect(() => {
+    if (!isTreeExpanded) return undefined
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [isTreeExpanded])
 
   const handleReset = useCallback(() => {
     clearTimeout(animationRef.current)
@@ -139,6 +146,7 @@ export default function RecursionVisualizer() {
     setCurrentNodeId(null); setExecutionPhase(null); setCurrentLine(null)
     setIsRunning(false); setIsPaused(false); setIsComplete(false)
     setCurrentStep(0); setTotalSteps(0)
+    setIsTreeExpanded(false)
     stepsRef.current = []; stepIndexRef.current = 0
   }, [])
 
@@ -253,6 +261,7 @@ export default function RecursionVisualizer() {
   }, [handleReset])
 
   const showVisualizer = mode === 'examples' || !!customCodeData
+  const toggleTreeExpand = useCallback(() => setIsTreeExpanded(prev => !prev), [])
 
   return (
     <div className="app-shell font-sans selection:bg-tokyo-magenta/25 selection:text-tokyo-fg">
@@ -337,7 +346,13 @@ export default function RecursionVisualizer() {
               <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
             </div>
             <div className="lg:col-span-5 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
-              <RecursionTree nodes={nodes} currentNodeId={currentNodeId} executionPhase={executionPhase} />
+              <RecursionTree
+                nodes={nodes}
+                currentNodeId={currentNodeId}
+                executionPhase={executionPhase}
+                isExpanded={false}
+                onToggleExpand={toggleTreeExpand}
+              />
             </div>
             <div className="lg:col-span-3 flex flex-col gap-5 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
               <div className="flex-1 min-h-0">
@@ -348,6 +363,20 @@ export default function RecursionVisualizer() {
               </div>
             </div>
           </motion.div>
+        )}
+
+        {showVisualizer && isTreeExpanded && (
+          <div className="fixed inset-0 z-50 bg-tokyo-night/95 p-4 md:p-6">
+            <div className="h-full w-full">
+              <RecursionTree
+                nodes={nodes}
+                currentNodeId={currentNodeId}
+                executionPhase={executionPhase}
+                isExpanded={true}
+                onToggleExpand={toggleTreeExpand}
+              />
+            </div>
+          </div>
         )}
 
         <motion.footer
