@@ -1,9 +1,13 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GitBranch, ArrowDown, Maximize2, Minimize2 } from 'lucide-react'
 
 export default function RecursionTree({ nodes, currentNodeId, executionPhase, isExpanded = false, onToggleExpand }) {
+  const viewportRef = useRef(null)
+  const contentRef = useRef(null)
+  const [fitScale, setFitScale] = useState(1)
+
   const treeData = useMemo(() => {
     if (!nodes || nodes.length === 0) return null
 
@@ -56,6 +60,38 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
     const rootWidth = measure(treeData)
     return { rootWidth, widthById, childSpanById, leafWidth: LEAF_W, gap: GAP }
   }, [treeData])
+
+  useEffect(() => {
+    const viewportEl = viewportRef.current
+    const contentEl = contentRef.current
+    if (!viewportEl || !contentEl || !treeData) {
+      setFitScale(1)
+      return undefined
+    }
+
+    const computeScale = () => {
+      const availableWidth = Math.max(viewportEl.clientWidth - 24, 1)
+      const availableHeight = Math.max(viewportEl.clientHeight - 24, 1)
+      const contentWidth = Math.max(contentEl.scrollWidth, 1)
+      const contentHeight = Math.max(contentEl.scrollHeight, 1)
+      const scaleX = availableWidth / contentWidth
+      const scaleY = availableHeight / contentHeight
+      const nextScale = Math.min(1, scaleX, scaleY)
+      setFitScale(nextScale > 0 ? nextScale : 1)
+    }
+
+    const rafId = requestAnimationFrame(computeScale)
+    const observer = new ResizeObserver(computeScale)
+    observer.observe(viewportEl)
+    observer.observe(contentEl)
+    window.addEventListener('resize', computeScale)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      observer.disconnect()
+      window.removeEventListener('resize', computeScale)
+    }
+  }, [treeData, layout?.rootWidth, nodes?.length])
 
   const getNodeStyle = (node) => {
     const isActive = node.id === currentNodeId
@@ -217,14 +253,20 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto bg-tokyo-night p-6">
+      <div ref={viewportRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-tokyo-night p-6">
         <AnimatePresence>
           {treeData ? (
-            <div
-              className="mx-auto flex justify-center"
-              style={{ minWidth: layout?.rootWidth ? `${layout.rootWidth}px` : 'max-content' }}
-            >
-              {renderNode(treeData, 0)}
+            <div className="flex min-h-full items-start justify-center">
+              <div
+                ref={contentRef}
+                style={{
+                  width: layout?.rootWidth ? `${layout.rootWidth}px` : 'max-content',
+                  transform: `scale(${fitScale})`,
+                  transformOrigin: 'top center',
+                }}
+              >
+                {renderNode(treeData, 0)}
+              </div>
             </div>
           ) : (
             <div className="flex h-full flex-col items-center justify-center text-tokyo-comment">
