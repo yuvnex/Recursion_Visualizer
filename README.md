@@ -466,7 +466,3 @@ on load. Reorder the array in `ExampleSelector.jsx` to change it.
 npm run build
 ```
 
-Output goes to `dist/`. Serve with any static host (Netlify, Vercel, GitHub Pages, etc.)
-
----
-
