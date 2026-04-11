@@ -466,21 +466,3 @@ on load. Reorder the array in `ExampleSelector.jsx` to change it.
 npm run build
 ```
 
-Output goes to `dist/`. Serve with any static host (Netlify, Vercel, GitHub Pages, etc.)
-
----
-
-## What Was Removed from the Original Base44 Version
-
-| Removed | Replaced with |
-|---|---|
-| `@base44/sdk` package | nothing — not needed |
-| `@base44/vite-plugin` package | nothing — not needed |
-| `src/api/base44Client.js` | `src/api/llmClient.js` (local JSON + Anthropic) |
-| `src/lib/AuthContext.jsx` | removed — no login required |
-| `src/lib/NavigationTracker.jsx` | removed — no analytics |
-| `src/lib/app-params.js` | removed — no Base44 app ID needed |
-| `src/App.jsx` (auth flow) | simplified `src/App.jsx` |
-| `src/pages.config.js` | removed — routes handled directly in App.jsx |
-
-Everything else (all UI components, all visualizer logic) is identical.
