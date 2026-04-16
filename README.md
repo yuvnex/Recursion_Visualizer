@@ -2,7 +2,6 @@
 
 An interactive tool to visualize how recursive functions execute step by step. Watch the call tree build, see the stack grow and shrink, and understand recursion from the ground up.
 
-**100% Offline** — No API keys required. Works entirely in your browser.
 
 ---
 
