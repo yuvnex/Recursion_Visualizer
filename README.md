@@ -339,23 +339,6 @@ Edit `src/lib/codeRunner.js` and add transpiler functions for new languages in:
 
 MIT
 
----
-
-## FAQ
-
-**Q: Does this require internet?**  
-A: No. Everything runs locally in your browser. No data is sent anywhere.
-
-**Q: Can I visualize any recursive function?**  
-A: Yes, as long as it's valid code in a supported language and has a clear base case.
-
-**Q: How deep can the recursion go?**  
-A: Up to 500 calls. This prevents browser slowdowns and crashes.
-
-**Q: Can I export the visualization?**  
-A: Currently, screenshots are your best option. Video recording is planned for future versions.
-
----
 
 Built with ❤️ to help students understand recursion.
 
