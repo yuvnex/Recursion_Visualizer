@@ -14,35 +14,36 @@ export default function ExecutionLog({ logs }) {
 
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
-      <div className="app-panel-head flex items-center gap-2">
-        <ListOrdered className="h-4 w-4 text-tokyo-blue" />
-        <span className="text-sm font-semibold text-tokyo-fg">Execution log</span>
-        <span className="ml-auto text-xs text-tokyo-comment">{logs.length} events</span>
+      <div className="app-panel-head flex items-center gap-3">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <ListOrdered className="h-3.5 w-3.5" />
+        </div>
+        <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Execution log</span>
+        <span className="ml-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{logs.length} events</span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-1 overflow-auto bg-tokyo-night p-2 font-mono text-xs">
+      <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto bg-background p-3 font-mono text-xs">
         <AnimatePresence>
           {logs.map((log, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`flex items-start gap-2 rounded border p-2 ${
-                log.type === 'call' ? 'border-tokyo-blue/40 bg-tokyo-storm' :
-                log.type === 'return' ? 'border-tokyo-green/40 bg-tokyo-storm' :
-                log.type === 'base' ? 'border-tokyo-orange/40 bg-tokyo-deep' : 'border-tokyo-border bg-tokyo-deep'
+              className={`flex items-start gap-2.5 rounded-lg border p-2.5 shadow-sm transition-colors ${
+                log.type === 'call' ? 'border-primary/20 bg-primary/5' :
+                log.type === 'return' ? 'border-green-500/20 bg-green-50 dark:bg-green-500/5' :
+                log.type === 'base' ? 'border-amber-500/20 bg-amber-50 dark:bg-amber-500/5' : 'border-border/50 bg-muted/20'
               }`}
             >
-              <span className="w-6 shrink-0 text-tokyo-comment">{index + 1}.</span>
               {log.type === 'call' || log.type === 'base'
-                ? <ArrowRight className="mt-0.5 h-3 w-3 shrink-0 text-tokyo-blue" />
-                : <ArrowLeft className="mt-0.5 h-3 w-3 shrink-0 text-tokyo-green" />
+                ? <ArrowRight className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${log.type === 'base' ? 'text-amber-500' : 'text-primary'}`} />
+                : <ArrowLeft className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600 dark:text-green-400" />
               }
-              <span className={
-                log.type === 'call' ? 'text-tokyo-blue' :
-                log.type === 'return' ? 'text-tokyo-green' :
-                log.type === 'base' ? 'text-tokyo-orange' : 'text-tokyo-muted'
-              }>
+              <span className={`font-medium ${
+                log.type === 'call' ? 'text-primary' :
+                log.type === 'return' ? 'text-green-700 dark:text-green-400' :
+                log.type === 'base' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+              }`}>
                 {log.message}
               </span>
             </motion.div>
@@ -50,7 +51,8 @@ export default function ExecutionLog({ logs }) {
         </AnimatePresence>
 
         {logs.length === 0 && (
-          <div className="flex h-full items-center justify-center text-tokyo-comment">
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+            <ListOrdered className="h-8 w-8 text-border" />
             <p className="text-xs">Run or step to see events</p>
           </div>
         )}

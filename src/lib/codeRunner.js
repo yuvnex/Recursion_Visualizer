@@ -46,11 +46,18 @@ function transpileCStyle(code) {
   r = r.replace(/\b(public|private|protected)\s*:/g, '')  // C++ style
   r = r.replace(/\b(public|private|protected|static|final|synchronized|volatile|transient|inline|virtual|override|explicit|constexpr)\s+/g, ' ')
 
+  // STEP 3.5: Strip Java generics (e.g. <Integer>, <List<String>>, <>) safely
+  let prev
+  do {
+    prev = r
+    r = r.replace(/\b([A-Z]\w*)\s*<[^<>]*>/g, '$1')
+  } while (r !== prev)
+
   // STEP 4: Handle method signatures - convert "Type funcName(" → "function funcName("
   // This is critical - must match various Java patterns
   r = r.replace(
-    /\b(int|long\s+long|long|double|float|boolean|bool|char|void|auto|size_t|unsigned(?:\s+int)?|unsigned\s+long|String|string)\s+([A-Za-z_]\w*)\s*\(/g,
-    'function $2('
+    /\b(?:[A-Z]\w*|int|long\s+long|long|double|float|boolean|bool|char|void|auto|size_t|unsigned(?:\s+int)?|unsigned\s+long|String|string)\s+(?:\[\]\s*)*([A-Za-z_]\w*)\s*\(/g,
+    'function $1('
   )
 
   // STEP 5: Clean up function parameters - remove types from inside parentheses
@@ -58,22 +65,33 @@ function transpileCStyle(code) {
     const cleanedParams = params
       .split(',')
       .map(p => {
-        // Remove all type annotations and keep just the param name
         let cleaned = p.trim()
-        // Remove type keywords
-        cleaned = cleaned.replace(/\b(int|long|double|float|boolean|bool|char|void|auto|size_t|unsigned|String|string)\s*(?:\[\]\s*)*\b/g, '').trim()
-        // Remove array brackets
-        cleaned = cleaned.replace(/\[\s*\]/g, '').trim()
+        if (!cleaned) return ''
         // Remove default values and just keep name
         cleaned = cleaned.split('=')[0].trim()
-        return cleaned
+        // Remove array brackets
+        cleaned = cleaned.replace(/\[\s*\]/g, '').trim()
+        // The parameter name is the last identifier
+        const parts = cleaned.split(/\s+/)
+        return parts[parts.length - 1]
       })
-      .filter(p => p.length > 0 && p !== ',' && !/^\s*$/.test(p))
+      .filter(p => p.length > 0 && p !== ',')
       .join(', ')
     return `function ${funcName}(${cleanedParams})`
   })
 
+  // STEP 5.5: Java Collections & Arrays Instantiation
+  r = r.replace(/\bnew\s+(?:ArrayList|LinkedList|HashSet|Stack|ArrayDeque|Vector)\s*\(\s*([^)]+)\s*\)/g, '[...$1]')
+  r = r.replace(/\bnew\s+(?:ArrayList|LinkedList|HashSet|Stack|ArrayDeque|Vector)\s*\(\s*\)/g, '[]')
+  r = r.replace(/\bnew\s+boolean\s*\[\s*([^\]]+)\s*\]/g, 'new Array($1).fill(false)')
+  r = r.replace(/\bnew\s+(?:int|long|double|float|char)\s*\[\s*([^\]]+)\s*\]/g, 'new Array($1).fill(0)')
+  r = r.replace(/\bnew\s+(?:String|string)\s*\[\s*([^\]]+)\s*\]/g, 'new Array($1).fill("")')
+
   // STEP 6: Handle variable declarations
+  const javaTypes = 'List|ArrayList|LinkedList|Set|HashSet|Map|HashMap|Stack|Queue|Deque|ArrayDeque|Vector'
+  r = r.replace(new RegExp(`\\b(?:${javaTypes})\\s+([A-Za-z_]\\w*)\\s*=`, 'g'), 'var $1 =')
+  r = r.replace(new RegExp(`\\b(?:${javaTypes})\\s+([A-Za-z_]\\w*)\\s*;`, 'g'), 'var $1;')
+
   // Type[] varName = value; → var varName = value;  (MUST BE FIRST to avoid partial match)
   r = r.replace(
     /\b(int|long|double|float|boolean|bool|char|void|auto|size_t|unsigned|String|string)\s*\[\s*\]\s+([A-Za-z_]\w*)\s*=/g,
@@ -177,8 +195,8 @@ function transpileCStyle(code) {
   r = r.replace(/^\s*;\s*$/gm, '')
   // Remove stray semicolons and clean up
   r = r.replace(/\s*;\s*;/g, ';')
-  // Clean up multiple spaces
-  r = r.replace(/\s{2,}/g, ' ')
+  // Clean up multiple spaces (but preserve newlines)
+  r = r.replace(/[ \t]{2,}/g, ' ')
   // Clean up newlines
   r = r.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n')
 
@@ -353,24 +371,33 @@ function detectInvocation(jsCode, definedNames) {
     return null
   }
 
+  // Filter lines to only those at top level (brace depth 0)
+  const topLevelLines = []
+  let depth = 0
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const trimmed = line.trim()
+    let lineStartsAt0 = (depth === 0)
+    for (const ch of line) {
+      if (ch === '{') depth++
+      else if (ch === '}') depth = Math.max(0, depth - 1)
+    }
+    let lineEndsAt0 = (depth === 0)
+    
+    // If it started and ended at 0, it's a top-level statement
+    if (lineStartsAt0 && lineEndsAt0) {
+      topLevelLines.push(trimmed)
+    }
+  }
+
   // Prefer the LAST top-level call-looking line to a defined function.
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const t = lines[i].trim()
+  for (let i = topLevelLines.length - 1; i >= 0; i--) {
+    const t = topLevelLines[i]
     if (isIgnorableLine(t)) continue
     const found = findCallInText(t)
     if (found) return found
   }
 
-  // Fallback: search entire code and pick last match position
-  let best = null
-  for (const name of definedNames) {
-    const reg = new RegExp(`\\b${name}\\s*\\(([^)]*)\\)`, 'g')
-    let m
-    while ((m = reg.exec(jsCode)) !== null) {
-      best = { name, invocation: `${name}(${(m[1] ?? '').trim()})`, idx: m.index }
-    }
-  }
-  if (best) return { name: best.name, invocation: best.invocation }
   return null
 }
 
@@ -442,14 +469,21 @@ function executeWithTracing(jsCode, definedNames, entry) {
     return function (...args) {
       const id = nodeId++
       const parentId = stack.length ? stack[stack.length - 1] : null
+      
+      const clone = (v) => {
+        if (v === null || typeof v !== 'object') return v
+        if (Array.isArray(v)) return v.map(clone)
+        return { ...v }
+      }
+
       const label = `${fnName}(${args.map(a => {
         if (Array.isArray(a)) return '[' + a.join(',') + ']'
         return JSON.stringify(a)
       }).join(', ')})`
 
       const params = {}
-      pnames.forEach((name, i) => { if (args[i] !== undefined) params[name] = args[i] })
-      if (pnames.length === 0) args.forEach((a, i) => { params[`arg${i}`] = a })
+      pnames.forEach((name, i) => { if (args[i] !== undefined) params[name] = clone(args[i]) })
+      if (pnames.length === 0) args.forEach((a, i) => { params[`arg${i}`] = clone(a) })
 
       stack.push(id)
       const callIdx = steps.length
@@ -484,6 +518,14 @@ function executeWithTracing(jsCode, definedNames, entry) {
       .join('\n')
 
     const sandboxCode = `
+      // Polyfills for Java Collections
+      if (!Array.prototype.add) { Array.prototype.add = function(item) { this.push(item); return true; }; }
+      if (!Array.prototype.size) { Array.prototype.size = function() { return this.length; }; }
+      if (!Array.prototype.remove) { Array.prototype.remove = function(index) { return this.splice(index, 1)[0]; }; }
+      if (!Array.prototype.get) { Array.prototype.get = function(index) { return this[index]; }; }
+      if (!Array.prototype.set) { Array.prototype.set = function(index, val) { const old = this[index]; this[index] = val; return old; }; }
+      if (!Array.prototype.isEmpty) { Array.prototype.isEmpty = function() { return this.length === 0; }; }
+
       ${normalized}
       ${tracedAssignments}
       return (${entry.invocation});

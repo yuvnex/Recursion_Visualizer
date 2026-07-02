@@ -3,6 +3,22 @@ import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GitBranch, ArrowDown, Maximize2, Minimize2 } from 'lucide-react'
 
+const getNodeLabel = (node) => {
+  if (!node.params) return node.label
+  const formatVal = (v) => {
+    if (Array.isArray(v)) return v.length > 4 ? `[${v.slice(0,3).join(',')},..]` : `[${v.join(',')}]`
+    if (typeof v === 'boolean') return v ? 'T' : 'F'
+    return String(v)
+  }
+  const fnName = node.label ? node.label.split('(')[0] : ''
+  const keys = Object.keys(node.params)
+  const interestingKeys = keys.filter(k => !['ans', 'res', 'result', 'nums', 'arr', 'freq', 'visited'].includes(k))
+  const vals = (interestingKeys.length > 0 ? interestingKeys : keys).map(k => formatVal(node.params[k]))
+  const str = vals.join(', ')
+  const paramsStr = str.length > 18 ? str.substring(0, 16) + '..' : str
+  return `${fnName}(${paramsStr})`
+}
+
 export default function RecursionTree({ nodes, currentNodeId, executionPhase, isExpanded = false, onToggleExpand }) {
   const viewportRef = useRef(null)
   const contentRef = useRef(null)
@@ -34,31 +50,35 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
   const layout = useMemo(() => {
     if (!treeData) return null
 
-    const LEAF_W = 180
-    const GAP = 32
+    const GAP = 16
 
     const widthById = {}
     const childSpanById = {}
 
     const measure = (node) => {
-      if (!node) return LEAF_W
+      if (!node) return 90
+      
+      const labelStr = getNodeLabel(node)
+      // Approximate width based on character count for font-mono text-lg + padding
+      const nodeNeededWidth = Math.max(90, labelStr.length * 11 + 40)
+
       const children = node.children ?? []
       if (children.length === 0) {
-        widthById[node.id] = LEAF_W
+        widthById[node.id] = nodeNeededWidth
         childSpanById[node.id] = 0
-        return LEAF_W
+        return nodeNeededWidth
       }
 
       const childWidths = children.map(measure)
       const span = childWidths.reduce((a, b) => a + b, 0) + GAP * Math.max(children.length - 1, 0)
-      const w = Math.max(LEAF_W, span)
+      const w = Math.max(nodeNeededWidth, span)
       widthById[node.id] = w
       childSpanById[node.id] = span
       return w
     }
 
     const rootWidth = measure(treeData)
-    return { rootWidth, widthById, childSpanById, leafWidth: LEAF_W, gap: GAP }
+    return { rootWidth, widthById, childSpanById, gap: GAP }
   }, [treeData])
 
   useEffect(() => {
@@ -98,42 +118,42 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
     if (isActive && executionPhase === 'calling') {
       return {
-        container: 'scale-[1.02] border-2 border-tokyo-orange bg-tokyo-deep',
-        text: 'font-semibold text-tokyo-orange',
+        container: 'scale-[1.05] border-[2px] border-amber-500 bg-amber-50 dark:bg-amber-500/10 shadow-md shadow-amber-500/20 z-10',
+        text: 'text-amber-700 dark:text-amber-400 text-lg',
       }
     }
 
     if (isActive && executionPhase === 'returning') {
       return {
-        container: 'scale-[1.02] border-2 border-tokyo-magenta bg-tokyo-deep',
-        text: 'font-semibold text-tokyo-magenta',
+        container: 'scale-[1.05] border-[2px] border-primary bg-primary/10 shadow-md shadow-primary/20 z-10',
+        text: 'text-primary text-lg',
       }
     }
 
     if (node.isBaseCase && node.returned) {
       return {
-        container: 'border border-tokyo-green bg-tokyo-deep',
-        text: 'text-tokyo-green',
+        container: 'border-[2px] border-green-500/40 bg-green-50 dark:bg-green-500/10 opacity-90',
+        text: 'text-green-700 dark:text-green-400 text-lg',
       }
     }
 
     if (node.returned) {
       return {
-        container: 'border border-tokyo-border bg-tokyo-deep opacity-90',
-        text: 'text-tokyo-comment',
+        container: 'border-[2px] border-green-500/40 bg-green-50 dark:bg-green-500/10 opacity-90',
+        text: 'text-green-700 dark:text-green-400 text-lg',
       }
     }
 
     if (node.isBaseCase) {
       return {
-        container: 'border-2 border-tokyo-green bg-tokyo-deep',
-        text: 'text-tokyo-green',
+        container: 'border-[2px] border-blue-500/30 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10',
+        text: 'text-blue-700 dark:text-blue-400 text-lg',
       }
     }
 
     return {
-      container: 'border border-tokyo-blue/60 bg-tokyo-storm',
-      text: 'text-tokyo-fg',
+      container: 'border-[2px] border-blue-500/30 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10',
+      text: 'text-blue-700 dark:text-blue-400 text-lg',
     }
   }
 
@@ -156,33 +176,30 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
         transition={{ delay: depth * 0.08, duration: 0.4, ease: 'easeOut' }}
       >
         <motion.div
-          className={`relative rounded-md px-3 py-2 font-mono text-sm transition-colors ${style.container}`}
+          className={`relative rounded-full flex h-12 min-w-[3rem] items-center justify-center px-3 font-mono transition-colors shadow-lg ${style.container}`}
           whileHover={{ scale: 1.02 }}
           layout
         >
-          <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-tokyo-border bg-tokyo-night text-[10px] font-bold text-tokyo-muted">
-            {depth}
+          <div className={`font-bold ${style.text}`}>
+            {getNodeLabel(node)}
           </div>
-
-          <div className={`font-semibold ${style.text}`}>{node.label}</div>
-
-          {node.returned && node.returnValue !== undefined && (
-            <motion.div
-              className={`text-xs mt-1 flex items-center justify-center gap-1 ${style.text}`}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <ArrowDown className="w-3 h-3" />
-              <span>→ {JSON.stringify(node.returnValue)}</span>
-            </motion.div>
-          )}
         </motion.div>
+
+        {node.returned && node.returnValue !== undefined && (
+          <motion.div
+            className={`text-[11px] font-bold mt-1 text-muted-foreground`}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            ret: {JSON.stringify(node.returnValue)}
+          </motion.div>
+        )}
 
         {hasChildren && (
           <>
             <motion.div
-              className="h-6 w-0.5 bg-tokyo-border"
+              className="h-6 w-[2px] bg-border"
               initial={{ scaleY: 0 }}
               animate={{ scaleY: 1 }}
               transition={{ delay: depth * 0.08 + 0.2 }}
@@ -191,7 +208,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
             {node.children.length > 1 && childSpan > 0 && (
               <motion.div
-                className="h-px bg-tokyo-border"
+                className="h-[2px] bg-border"
                 style={{ width: `${childSpan}px` }}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -200,7 +217,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
               />
             )}
 
-            <div className="mt-2">
+            <div className="mt-0">
               <AnimatePresence mode="popLayout">
                 <div
                   className="grid items-start justify-center"
@@ -213,7 +230,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                     <div key={child.id} className="flex flex-col items-center">
                       {node.children.length > 1 && (
                         <motion.div
-                          className="h-4 w-0.5 bg-tokyo-border"
+                          className="h-6 w-[2px] bg-border"
                           initial={{ scaleY: 0 }}
                           animate={{ scaleY: 1 }}
                           transition={{ delay: depth * 0.08 + 0.4 }}
@@ -234,11 +251,13 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
-      <div className="app-panel-head flex items-center gap-2">
-        <GitBranch className="h-4 w-4 text-tokyo-blue" />
-        <span className="text-sm font-semibold text-tokyo-fg">Recursion tree</span>
+      <div className="app-panel-head flex items-center gap-3">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <GitBranch className="h-3.5 w-3.5" />
+        </div>
+        <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Recursion tree</span>
         {treeData && (
-          <span className="ml-auto rounded-full border border-tokyo-border bg-tokyo-deep px-2.5 py-0.5 font-mono text-xs text-tokyo-muted">
+          <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs font-medium text-muted-foreground">
             {nodes?.length} calls
           </span>
         )}
@@ -253,7 +272,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
         </button>
       </div>
 
-      <div ref={viewportRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-tokyo-night p-6">
+      <div ref={viewportRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-background p-6">
         <AnimatePresence>
           {treeData ? (
             <div className="flex min-h-full items-start justify-center">
@@ -269,10 +288,9 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
               </div>
             </div>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center text-tokyo-comment">
-              <GitBranch className="mb-3 h-10 w-10 text-tokyo-border" />
-              <p className="text-sm font-medium text-tokyo-muted">No tree yet</p>
-              <p className="mt-1 text-xs text-tokyo-comment">Press Run or Step to begin</p>
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
+              <GitBranch className="h-10 w-10 text-border" />
+              <p className="text-sm font-medium">Press Run or Step to build the tree</p>
             </div>
           )}
         </AnimatePresence>

@@ -5,8 +5,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
+        mono: ['"JetBrains Mono"', '"Fira Code"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace'],
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -14,24 +14,6 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
-        tokyo: {
-          night: '#1a1b26',
-          deep: '#16161e',
-          storm: '#24283b',
-          highlight: '#292e42',
-          border: '#3b4261',
-          fg: '#c0caf5',
-          muted: '#a9b1d6',
-          comment: '#565f89',
-          blue: '#7aa2f7',
-          cyan: '#7dcfff',
-          teal: '#2ac3de',
-          green: '#9ece6a',
-          magenta: '#bb9af7',
-          orange: '#ff9e64',
-          red: '#f7768e',
-          yellow: '#e0af68',
-        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

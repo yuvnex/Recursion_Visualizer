@@ -1,9 +1,15 @@
 import React from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { BookOpen } from 'lucide-react'
 import { motion } from 'framer-motion'
+
+const formatInput = (input) => {
+  if (typeof input === 'number') return `n = ${input}`
+  return Object.entries(input)
+    .map(([k, v]) => `${k} = ${JSON.stringify(v)}`)
+    .join('   ')
+}
 
 export const EXAMPLES = [
   {
@@ -95,57 +101,47 @@ export const EXAMPLES = [
   },
 ]
 
-const difficultyColors = {
-  Beginner: 'border-tokyo-border bg-tokyo-deep text-tokyo-green',
-  Intermediate: 'border-tokyo-border bg-tokyo-deep text-tokyo-yellow',
-  Advanced: 'border-tokyo-border bg-tokyo-deep text-tokyo-red',
-}
-
 export default function ExampleSelector({ selectedExample, onSelect }) {
   return (
     <Card className="app-panel overflow-hidden">
-      <div className="app-panel-head flex items-center gap-2">
-        <BookOpen className="h-4 w-4 text-tokyo-blue" />
-        <span className="text-sm font-semibold text-tokyo-fg">Example problems</span>
-        <span className="ml-auto text-xs font-medium text-tokyo-comment">Built-in</span>
+      <div className="app-panel-head flex items-center gap-3">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <BookOpen className="h-3.5 w-3.5" />
+        </div>
+        <span className="text-sm font-semibold text-foreground tracking-wide uppercase">Example problems</span>
       </div>
-      <div className="p-4">
+      <div className="p-5">
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2.5">
         {EXAMPLES.map((example, index) => (
           <motion.div
             key={example.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.03, duration: 0.2 }}
           >
-            <Button
-              variant={selectedExample?.id === example.id ? 'default' : 'outline'}
+            <button
               onClick={() => onSelect(example)}
-              className={`relative transition-colors ${
+              className={`relative flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                 selectedExample?.id === example.id
-                  ? 'border-tokyo-blue bg-tokyo-blue text-white hover:brightness-110'
-                  : 'border-tokyo-border bg-tokyo-deep text-tokyo-fg hover:bg-tokyo-highlight'
+                  ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               {example.name}
-              <Badge variant="outline" className={`ml-2 text-xs ${difficultyColors[example.difficulty]}`}>
-                {example.difficulty}
-              </Badge>
-            </Button>
+            </button>
           </motion.div>
         ))}
       </div>
 
       {selectedExample && (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="mt-4 rounded-md border border-tokyo-border bg-tokyo-deep p-3"
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-6 rounded-xl border border-border/50 bg-muted/20 p-4 shadow-sm"
         >
-          <p className="text-sm leading-relaxed text-tokyo-muted">{selectedExample.description}</p>
-          <p className="mt-2 font-mono text-xs text-tokyo-comment">
-            Input: {JSON.stringify(selectedExample.input)}
+          <p className="font-mono text-sm text-muted-foreground">
+            {formatInput(selectedExample.input)}
           </p>
         </motion.div>
       )}

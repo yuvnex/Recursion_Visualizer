@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 export default function ControlPanel({
   isRunning, isPaused, speed,
   onStart, onPause, onResume, onStep, onReset, onSpeedChange,
-  currentStep, totalSteps, isComplete,
+  currentStep, totalSteps, isComplete, complexity
 }) {
   return (
     <Card className="app-panel overflow-hidden">
@@ -19,7 +19,7 @@ export default function ControlPanel({
               <Button
                 onClick={isRunning ? onResume : onStart}
                 disabled={isComplete}
-                className="app-btn-primary border-transparent"
+                className="app-btn-primary"
               >
                 <Play className="mr-2 h-4 w-4" />
                 {isRunning ? 'Resume' : 'Run'}
@@ -30,7 +30,7 @@ export default function ControlPanel({
               <Button
                 onClick={onPause}
                 variant="outline"
-                className="border-tokyo-orange/40 bg-tokyo-deep text-tokyo-orange hover:bg-tokyo-highlight"
+                className="border-amber-500/30 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
               >
                 <Pause className="mr-2 h-4 w-4" />
                 Pause
@@ -58,18 +58,18 @@ export default function ControlPanel({
           </motion.div>
         </div>
 
-        <div className="hidden h-8 w-px bg-tokyo-border sm:block" />
+        <div className="hidden h-8 w-px bg-border sm:block" />
 
         <div className="flex min-w-[200px] flex-1 items-center gap-3 sm:flex-initial">
-          <Gauge className="h-4 w-4 text-tokyo-comment" />
-          <span className="w-12 text-sm text-tokyo-muted">Speed</span>
+          <Gauge className="h-4 w-4 text-muted-foreground" />
+          <span className="w-12 text-sm text-muted-foreground font-medium">Speed</span>
           <Slider
             value={[speed]}
             onValueChange={(value) => onSpeedChange(value[0])}
             min={0.25} max={2} step={0.25}
             className="flex-1"
           />
-          <span className="w-12 font-mono text-sm text-tokyo-cyan">{speed}x</span>
+          <span className="w-12 font-mono text-sm text-primary font-bold">{speed}x</span>
         </div>
 
         <div className="ml-auto flex items-center gap-3">
@@ -77,31 +77,42 @@ export default function ControlPanel({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2 rounded-full border border-tokyo-green/40 bg-tokyo-deep px-3 py-1.5 text-sm text-tokyo-green"
+              className="flex items-center gap-2 rounded-full border border-green-500/30 bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 font-medium px-3 py-1.5 text-sm"
             >
               <Check className="h-4 w-4" />
               Complete
             </motion.div>
           )}
           {totalSteps > 0 && (
-            <div className="flex items-center gap-2 text-sm text-tokyo-muted">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
               <span>Step</span>
-              <span className="font-mono font-medium text-tokyo-magenta">{currentStep}</span>
+              <span className="font-mono text-primary font-bold">{currentStep}</span>
               <span>/</span>
-              <span className="font-mono text-tokyo-fg">{totalSteps}</span>
+              <span className="font-mono text-foreground font-bold">{totalSteps}</span>
             </div>
           )}
         </div>
       </div>
 
       {totalSteps > 0 && (
-        <div className="h-1 bg-tokyo-deep">
+        <div className="h-1 bg-muted/50 rounded-b-xl overflow-hidden">
           <motion.div
-            className="h-full bg-tokyo-magenta"
+            className="h-full bg-primary rounded-r-full"
             initial={{ width: 0 }}
             animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
             transition={{ duration: 0.3 }}
           />
+        </div>
+      )}
+
+      {complexity && (isRunning || isComplete) && (
+        <div className="border-t border-border/60 bg-muted/30 px-5 py-3 flex items-center gap-6 font-mono text-xs text-muted-foreground">
+          <span>
+            Time: <span className="text-primary font-semibold">{complexity.time}</span>
+          </span>
+          <span>
+            Space: <span className="text-primary font-semibold">{complexity.space}</span>
+          </span>
         </div>
       )}
     </Card>

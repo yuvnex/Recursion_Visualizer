@@ -1,12 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brackets, Info } from 'lucide-react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Brackets } from 'lucide-react'
 import { llmClient } from '@/api/llmClient'
 
 import CodeEditor from '@/components/recursion/CodeEditor'
@@ -106,6 +100,14 @@ const simulators = {
   },
 }
 
+const COMPLEXITY = {
+  factorial:    { time: 'O(n)',        space: 'O(n)' },
+  fibonacci:    { time: 'O(2ⁿ)',       space: 'O(n)' },
+  binarySearch: { time: 'O(log₂ n)',   space: 'O(log₂ n)' },
+  sumArray:     { time: 'O(n)',        space: 'O(n)' },
+  power:        { time: 'O(n)',        space: 'O(n)' },
+}
+
 export default function RecursionVisualizer() {
   const [mode, setMode] = useState('examples')
   const [selectedExample, setSelectedExample] = useState(EXAMPLES[0])
@@ -156,14 +158,14 @@ export default function RecursionVisualizer() {
       setCurrentNodeId(step.nodeId)
       setNodes(prev => [...prev, { id: step.nodeId, parentId: step.parentId, label: step.label, params: step.params, isBaseCase: step.isBaseCase, returned: false }])
       setStack(prev => [...prev, { id: step.nodeId, label: step.label, params: step.params }])
-      setLogs(prev => [...prev, { type: step.isBaseCase ? 'base' : 'call', message: `Calling ${step.label}${step.isBaseCase ? ' (BASE CASE)' : ''}` }])
+      setLogs(prev => [...prev, { type: step.isBaseCase ? 'base' : 'call', message: `→ ${step.label}${step.isBaseCase ? '  [base]' : ''}` }])
       setCurrentLine(step.isBaseCase ? 2 : 6)
     } else {
       setExecutionPhase('returning')
       setCurrentNodeId(step.nodeId)
       setNodes(prev => prev.map(n => n.id === step.nodeId ? { ...n, returned: true, returnValue: step.value } : n))
       setStack(prev => prev.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId))
-      setLogs(prev => [...prev, { type: 'return', message: `Returning ${step.value} from node ${step.nodeId}` }])
+      setLogs(prev => [...prev, { type: 'return', message: `← ${step.label ?? `node ${step.nodeId}`}  =  ${step.value}` }])
       setCurrentLine(step.isBaseCase ? 3 : 7)
     }
   }, [])
@@ -264,7 +266,18 @@ export default function RecursionVisualizer() {
   const toggleTreeExpand = useCallback(() => setIsTreeExpanded(prev => !prev), [])
 
   return (
-    <div className="app-shell font-sans selection:bg-tokyo-magenta/25 selection:text-tokyo-fg">
+    <div className="app-shell font-sans selection:bg-primary/25 selection:text-foreground">
+      <header className="border-b border-border/60 bg-card px-4 py-3 shadow-sm md:px-8">
+        <div className="mx-auto flex max-w-[1840px] items-center justify-between">
+          <div className="flex items-center gap-2 text-primary">
+            <Brackets className="h-5 w-5" />
+            <span className="font-bold tracking-tight text-foreground">Recursion Visualizer</span>
+          </div>
+          <div className="text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+            Documentation
+          </div>
+        </div>
+      </header>
       <div className="relative z-10 mx-auto max-w-[1840px] px-4 py-6 md:px-8 md:py-8">
         <motion.header
           className="mb-8"
@@ -273,36 +286,17 @@ export default function RecursionVisualizer() {
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-tokyo-border bg-tokyo-storm">
-                <Brackets className="h-5 w-5 text-tokyo-blue" />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-primary/10 text-primary shadow-sm">
+                <Brackets className="h-5 w-5" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-semibold tracking-tight text-tokyo-fg sm:text-[1.65rem]">
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[1.65rem]">
                     Recursion Visualizer
                   </h1>
-                  <span className="app-pill">Runs offline</span>
                 </div>
-                <p className="mt-1 max-w-xl text-sm leading-relaxed text-tokyo-muted">
-                  Step through call trees, the stack, and execution logs. No sign-in and no external APIs.
-                </p>
               </div>
             </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="app-btn-secondary self-start rounded-md p-2 text-tokyo-comment hover:text-tokyo-fg"
-                  >
-                    <Info className="h-5 w-5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs border border-tokyo-border bg-tokyo-storm text-tokyo-fg shadow-lg">
-                  <p>Choose an example or paste Java, then use Run or Step to walk through calls and returns.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
           </div>
         </motion.header>
 
@@ -331,6 +325,7 @@ export default function RecursionVisualizer() {
               onStart={handleStart} onPause={handlePause} onResume={handleResume}
               onStep={handleStep} onReset={handleReset} onSpeedChange={setSpeed}
               currentStep={currentStep} totalSteps={totalSteps} isComplete={isComplete}
+              complexity={COMPLEXITY[selectedExample?.id]}
             />
           </motion.div>
         )}
@@ -366,7 +361,7 @@ export default function RecursionVisualizer() {
         )}
 
         {showVisualizer && isTreeExpanded && (
-          <div className="fixed inset-0 z-50 bg-tokyo-night/95 p-4 md:p-6">
+          <div className="fixed inset-0 z-50 bg-background/95 p-4 md:p-6 backdrop-blur-sm">
             <div className="h-full w-full">
               <RecursionTree
                 nodes={nodes}
@@ -379,23 +374,6 @@ export default function RecursionVisualizer() {
           </div>
         )}
 
-        <motion.footer
-          className="mt-10 border-t border-tokyo-border pt-8 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          {mode === 'custom' && !customCodeData && !isAnalyzing && (
-            <div className="app-panel mb-6 p-4 text-left sm:text-center">
-              <p className="text-sm text-tokyo-muted">
-                Paste your recursive Java above, then choose <span className="font-medium text-tokyo-fg">Analyze &amp; Visualize</span> to load the trace.
-              </p>
-            </div>
-          )}
-          <p className="text-xs text-tokyo-comment">
-            Runs entirely in your browser. No API keys.
-          </p>
-        </motion.footer>
       </div>
     </div>
   )

@@ -8,7 +8,7 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
 
   const getLineHighlight = (lineIndex) => {
     if (currentLine === lineIndex && isRunning) {
-      return 'border-l-[3px] border-tokyo-magenta bg-tokyo-highlight/80'
+      return 'border-l-[3px] border-primary bg-primary/10'
     }
     return 'border-l-[3px] border-transparent'
   }
@@ -29,25 +29,27 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
       <div className="app-panel-head flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Code2 className="h-4 w-4 text-tokyo-blue" />
-          <span className="text-sm font-semibold text-tokyo-fg">Source</span>
+        <div className="flex items-center gap-3">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <Code2 className="h-3.5 w-3.5" />
+          </div>
+          <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Source</span>
         </div>
         <div className="flex gap-2">
-          <Badge variant="outline" className="border-tokyo-border bg-tokyo-deep text-xs text-tokyo-green">
+          <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 text-xs font-medium">
             Base case
           </Badge>
-          <Badge variant="outline" className="border-tokyo-border bg-tokyo-deep text-xs text-tokyo-blue">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-medium">
             Recursive call
           </Badge>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-tokyo-night">
+      <div className="flex-1 overflow-auto bg-background">
         <div className="flex">
-          <div className="flex-shrink-0 select-none border-r border-tokyo-border bg-tokyo-deep py-4 pl-2 pr-3">
+          <div className="flex-shrink-0 select-none border-r border-border/50 bg-muted/20 py-4 pl-3 pr-4">
             {lines.map((_, i) => (
-              <div key={i} className="min-w-[2rem] text-right font-mono text-xs leading-6 text-tokyo-comment">
+              <div key={i} className="min-w-[1.5rem] text-right font-mono text-xs leading-6 text-muted-foreground/60">
                 {i + 1}
               </div>
             ))}
@@ -57,10 +59,10 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
               const isBaseCase = isBaseCaseLine(line)
               const isRecursive = isRecursiveCallLine(line)
               return (
-                <div key={i} className={`px-3 leading-6 transition-colors ${getLineHighlight(i)}`}>
+                <div key={i} className={`px-4 leading-6 transition-colors ${getLineHighlight(i)}`}>
                   <code
                     className={`whitespace-pre font-mono text-sm ${
-                      isBaseCase ? 'text-tokyo-green' : isRecursive ? 'text-tokyo-blue' : 'text-tokyo-fg'
+                      isBaseCase ? 'text-green-600 dark:text-green-400 font-medium' : isRecursive ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-foreground'
                     }`}
                   >
                     {line || ' '}
@@ -72,12 +74,12 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
         </div>
       </div>
 
-      <div className="border-t border-tokyo-border bg-tokyo-deep px-4 py-2.5">
-        <div className="flex items-center gap-2 text-xs text-tokyo-comment">
-          <Lightbulb className="h-3.5 w-3.5 text-tokyo-yellow" />
+      <div className="border-t border-border/60 bg-muted/30 px-5 py-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
           <span>
-            <span className="text-tokyo-green">Green</span>: likely base case ·{' '}
-            <span className="text-tokyo-blue">Blue</span>: likely recursive call
+            <span className="text-green-600 dark:text-green-400 font-medium">Green</span>: likely base case ·{' '}
+            <span className="text-blue-600 dark:text-blue-400 font-medium">Blue</span>: likely recursive call
           </span>
         </div>
       </div>
