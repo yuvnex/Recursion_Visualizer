@@ -113,47 +113,45 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
     }
   }, [treeData, layout?.rootWidth, nodes?.length])
 
-  const getNodeStyle = (node) => {
+  const getNodeStyle = (node, depth = 0) => {
     const isActive = node.id === currentNodeId
+
+    const emeraldBgs = [
+      'bg-emerald-600 border-emerald-700', // depth 0
+      'bg-emerald-500 border-emerald-600', // depth 1
+      'bg-emerald-400 border-emerald-500', // depth 2
+      'bg-emerald-300 border-emerald-400', // depth 3
+      'bg-emerald-200 border-emerald-300', // depth 4+
+    ]
+    const textColors = [
+      'text-white', // depth 0
+      'text-white', // depth 1
+      'text-emerald-950', // depth 2
+      'text-emerald-950', // depth 3
+      'text-emerald-950', // depth 4+
+    ]
+
+    const bgIndex = Math.min(depth, emeraldBgs.length - 1)
+    const defaultBg = emeraldBgs[bgIndex]
+    const defaultText = textColors[bgIndex]
 
     if (isActive && executionPhase === 'calling') {
       return {
-        container: 'scale-[1.05] border-[2px] border-amber-500 bg-amber-50 dark:bg-amber-500/10 shadow-md shadow-amber-500/20 z-10',
-        text: 'text-amber-700 dark:text-amber-400 text-lg',
+        container: `scale-[1.15] border-[3px] border-amber-400 ${defaultBg} shadow-lg shadow-amber-500/40 z-10`,
+        text: `${defaultText} text-lg`,
       }
     }
 
     if (isActive && executionPhase === 'returning') {
       return {
-        container: 'scale-[1.05] border-[2px] border-primary bg-primary/10 shadow-md shadow-primary/20 z-10',
-        text: 'text-primary text-lg',
-      }
-    }
-
-    if (node.isBaseCase && node.returned) {
-      return {
-        container: 'border-[2px] border-green-500/40 bg-green-50 dark:bg-green-500/10 opacity-90',
-        text: 'text-green-700 dark:text-green-400 text-lg',
-      }
-    }
-
-    if (node.returned) {
-      return {
-        container: 'border-[2px] border-green-500/40 bg-green-50 dark:bg-green-500/10 opacity-90',
-        text: 'text-green-700 dark:text-green-400 text-lg',
-      }
-    }
-
-    if (node.isBaseCase) {
-      return {
-        container: 'border-[2px] border-blue-500/30 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10',
-        text: 'text-blue-700 dark:text-blue-400 text-lg',
+        container: `scale-[1.1] border-[3px] border-blue-400 ${defaultBg} shadow-lg shadow-blue-500/40 z-10`,
+        text: `${defaultText} text-lg`,
       }
     }
 
     return {
-      container: 'border-[2px] border-blue-500/30 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10',
-      text: 'text-blue-700 dark:text-blue-400 text-lg',
+      container: `border-[2px] ${defaultBg} shadow-md`,
+      text: `${defaultText} text-lg`,
     }
   }
 
@@ -163,7 +161,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
     const nodeWidth = layout?.widthById?.[node.id] ?? 180
     const childSpan = layout?.childSpanById?.[node.id] ?? 0
 
-    const style = getNodeStyle(node)
+    const style = getNodeStyle(node, depth)
     const hasChildren = node.children && node.children.length > 0
 
     return (
