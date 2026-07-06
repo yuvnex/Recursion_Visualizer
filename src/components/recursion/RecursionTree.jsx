@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitBranch, ArrowDown, Maximize2, Minimize2 } from 'lucide-react'
+import { GitBranch, ArrowDown, ArrowUp, Maximize2, Minimize2 } from 'lucide-react'
 
 const getNodeLabel = (node) => {
   if (!node.params) return node.label
@@ -196,26 +196,69 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
         {hasChildren && (
           <>
-            <motion.div
-              className="h-6 w-[2px] bg-border"
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              transition={{ delay: depth * 0.08 + 0.2 }}
-              origin="top"
-            />
+            <div className="w-full flex justify-center z-0 relative py-2">
+              <svg width={nodeWidth} height={40} className="overflow-visible">
+                <defs>
+                  <marker id={`arrow-${node.id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" className="fill-border opacity-70" />
+                  </marker>
+                  <marker id={`arrow-active-calling-${node.id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" className="fill-amber-500" />
+                  </marker>
+                  <marker id={`arrow-active-returning-${node.id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" className="fill-blue-500" />
+                  </marker>
+                </defs>
 
-            {node.children.length > 1 && childSpan > 0 && (
-              <motion.div
-                className="h-[2px] bg-border"
-                style={{ width: `${childSpan}px` }}
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: depth * 0.08 + 0.3 }}
-                origin="center"
-              />
-            )}
+                {node.children.map((c, i) => {
+                  let currentX = 0;
+                  for (let j = 0; j < i; j++) {
+                    currentX += (layout?.widthById?.[node.children[j].id] ?? 180) + (layout?.gap ?? 32);
+                  }
+                  const cWidth = layout?.widthById?.[c.id] ?? 180;
+                  const childCenterInGrid = currentX + cWidth / 2;
+                  const gridLeftOffset = (nodeWidth - childSpan) / 2;
+                  const targetX = gridLeftOffset + childCenterInGrid;
 
-            <div className="mt-0">
+                  const isChildActive = c.id === currentNodeId;
+                  const isCalling = isChildActive && executionPhase === 'calling';
+                  const isReturning = isChildActive && executionPhase === 'returning';
+                  
+                  const strokeClass = isCalling ? 'stroke-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]' 
+                                   : isReturning ? 'stroke-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' 
+                                   : 'stroke-border opacity-70';
+                  
+                  const strokeWidth = isChildActive ? 3 : 2;
+
+                  const parentX = nodeWidth / 2;
+                  
+                  const x1 = isReturning ? targetX : parentX;
+                  const y1 = isReturning ? 40 : 0;
+                  const x2 = isReturning ? parentX : targetX;
+                  const y2 = isReturning ? 0 : 40;
+                  
+                  const markerId = isCalling ? `url(#arrow-active-calling-${node.id})` 
+                                 : isReturning ? `url(#arrow-active-returning-${node.id})` 
+                                 : `url(#arrow-${node.id})`;
+
+                  return (
+                    <motion.line
+                      key={c.id}
+                      x1={x1} y1={y1}
+                      x2={x2} y2={y2}
+                      className={strokeClass}
+                      strokeWidth={strokeWidth}
+                      markerEnd={markerId}
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.4, delay: depth * 0.08 + 0.2 }}
+                    />
+                  )
+                })}
+              </svg>
+            </div>
+
+            <div className="mt-0 z-10 relative">
               <AnimatePresence mode="popLayout">
                 <div
                   className="grid items-start justify-center"
@@ -226,15 +269,6 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                 >
                   {node.children.map((child) => (
                     <div key={child.id} className="flex flex-col items-center">
-                      {node.children.length > 1 && (
-                        <motion.div
-                          className="h-6 w-[2px] bg-border"
-                          initial={{ scaleY: 0 }}
-                          animate={{ scaleY: 1 }}
-                          transition={{ delay: depth * 0.08 + 0.4 }}
-                          origin="top"
-                        />
-                      )}
                       {renderNode(child, depth + 1)}
                     </div>
                   ))}
