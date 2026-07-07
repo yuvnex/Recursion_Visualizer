@@ -31,17 +31,17 @@ export default function ExecutionLog({ logs }) {
               animate={{ opacity: 1, x: 0 }}
               className={`flex items-start gap-2.5 rounded-lg border p-2.5 shadow-sm transition-colors ${
                 log.type === 'call' ? 'border-primary/20 bg-primary/5' :
-                log.type === 'return' ? 'border-green-500/20 bg-green-50 dark:bg-green-500/5' :
+                log.type === 'return' ? 'border-violet-500/20 bg-violet-50 dark:bg-violet-500/5' :
                 log.type === 'base' ? 'border-amber-500/20 bg-amber-50 dark:bg-amber-500/5' : 'border-border/50 bg-muted/20'
               }`}
             >
               {log.type === 'call' || log.type === 'base'
                 ? <ArrowRight className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${log.type === 'base' ? 'text-amber-500' : 'text-primary'}`} />
-                : <ArrowLeft className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600 dark:text-green-400" />
+                : <ArrowLeft className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-600 dark:text-violet-400" />
               }
               <span className={`font-medium ${
                 log.type === 'call' ? 'text-primary' :
-                log.type === 'return' ? 'text-green-700 dark:text-green-400' :
+                log.type === 'return' ? 'text-violet-700 dark:text-violet-400' :
                 log.type === 'base' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
               }`}>
                 {log.message}

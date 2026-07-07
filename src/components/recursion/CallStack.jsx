@@ -24,21 +24,21 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
               const isActive = frame.id === currentNodeId
               const depth = index
 
-              const emeraldBgs = [
-                'bg-emerald-600 border-emerald-700 text-white',
-                'bg-emerald-500 border-emerald-600 text-white',
-                'bg-emerald-400 border-emerald-500 text-emerald-950',
-                'bg-emerald-300 border-emerald-400 text-emerald-950',
-                'bg-emerald-200 border-emerald-300 text-emerald-950',
+              const indigoBgs = [
+                'bg-indigo-600 border-indigo-700 text-white',
+                'bg-indigo-500 border-indigo-600 text-white',
+                'bg-indigo-400 border-indigo-500 text-indigo-950',
+                'bg-indigo-300 border-indigo-400 text-indigo-950',
+                'bg-indigo-200 border-indigo-300 text-indigo-950',
               ]
-              const bgClass = emeraldBgs[Math.min(depth, emeraldBgs.length - 1)]
+              const bgClass = indigoBgs[Math.min(depth, indigoBgs.length - 1)]
 
               const activeClasses = isActive && executionPhase === 'calling'
                 ? 'ring-2 ring-amber-400 shadow-lg shadow-amber-500/30 scale-[1.02] z-10'
                 : isActive && executionPhase === 'returning'
                 ? 'ring-2 ring-blue-400 shadow-lg shadow-blue-500/30 scale-[1.02] z-10'
                 : isTop
-                ? 'ring-2 ring-emerald-300 shadow-md scale-[1.01] z-10'
+                ? 'ring-2 ring-indigo-300 shadow-md scale-[1.01] z-10'
                 : 'opacity-90'
 
               return (
