@@ -267,37 +267,8 @@ export default function RecursionVisualizer() {
 
   return (
     <div className="app-shell font-sans selection:bg-primary/25 selection:text-foreground">
-      <header className="border-b border-border/60 bg-card px-4 py-3 shadow-sm md:px-8">
-        <div className="mx-auto flex max-w-[1840px] items-center justify-between">
-          <div className="flex items-center">
-            <img src="/logo.jpg" alt="Recuriv" className="h-10 w-auto mix-blend-multiply dark:invert" />
-          </div>
-          <div className="text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-            Documentation
-          </div>
-        </div>
-      </header>
+
       <div className="relative z-10 mx-auto max-w-[1840px] px-4 py-6 md:px-8 md:py-8">
-        <motion.header
-          className="mb-8"
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-primary/10 text-primary shadow-sm">
-                <Brackets className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[1.65rem]">
-                    Recursion Visualizer
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.header>
 
         <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <ModeToggle mode={mode} onModeChange={handleModeChange} />
