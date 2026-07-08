@@ -269,9 +269,8 @@ export default function RecursionVisualizer() {
     <div className="app-shell font-sans selection:bg-primary/25 selection:text-foreground">
       <header className="border-b border-border/60 bg-card px-4 py-3 shadow-sm md:px-8">
         <div className="mx-auto flex max-w-[1840px] items-center justify-between">
-          <div className="flex items-center gap-2 text-primary">
-            <Brackets className="h-5 w-5" />
-            <span className="font-bold tracking-tight text-foreground">Recursion Visualizer</span>
+          <div className="flex items-center">
+            <img src="/logo.jpg" alt="Recuriv" className="h-10 w-auto mix-blend-multiply dark:invert" />
           </div>
           <div className="text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
             Documentation
