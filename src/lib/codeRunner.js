@@ -364,9 +364,24 @@ function detectInvocation(jsCode, definedNames) {
 
   const findCallInText = (text) => {
     for (const name of definedNames) {
-      const reg = new RegExp(`\\b${name}\\s*\\(([^)]*)\\)`)
+      const reg = new RegExp(`\\b${name}\\s*\\(`)
       const m = text.match(reg)
-      if (m) return { name, invocation: `${name}(${m[1].trim()})` }
+      if (m) {
+        const start = m.index + m[0].length - 1
+        let depth = 0
+        let end = -1
+        for (let j = start; j < text.length; j++) {
+          if (text[j] === '(') depth++
+          else if (text[j] === ')') depth--
+          if (depth === 0) {
+            end = j
+            break
+          }
+        }
+        if (end !== -1) {
+          return { name, invocation: text.substring(m.index, end + 1) }
+        }
+      }
     }
     return null
   }
