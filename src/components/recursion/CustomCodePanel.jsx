@@ -9,8 +9,6 @@ import { Code, Play, AlertCircle, Loader2, Plus, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
-  const [showHelp, setShowHelp] = useState(true)
-
   const [returnType, setReturnType] = useState('int')
   const [functionName, setFunctionName] = useState('factorial')
   const [parameters, setParameters] = useState([{ id: 1, type: 'int', name: 'n' }])
@@ -51,9 +49,6 @@ export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
           </div>
           <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Custom Java code</span>
         </div>
-        <Badge variant="secondary" className="text-xs font-medium">
-          Local only
-        </Badge>
       </div>
 
       <div className="space-y-6 p-5 flex flex-col">
@@ -64,32 +59,6 @@ export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
           </Button>
         </div>
 
-        {showHelp && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="rounded-xl border border-primary/20 bg-primary/5 p-4 shadow-sm"
-          >
-            <div className="flex items-start gap-3">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <div className="flex-1 space-y-2">
-                <p className="text-xs font-bold text-foreground uppercase tracking-wide">Builder Mode</p>
-                <p className="text-sm text-muted-foreground">
-                  Define your method signature horizontally, write the recursive logic in the body, and provide an initial call.
-                  The code will be automatically assembled for analysis.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowHelp(false)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Close help"
-              >
-                ✕
-              </button>
-            </div>
-          </motion.div>
-        )}
 
         {/* Builder UI */}
         <div className="rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
