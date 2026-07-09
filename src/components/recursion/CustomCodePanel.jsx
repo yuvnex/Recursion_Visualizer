@@ -32,14 +32,6 @@ export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
     return `public ${returnType} ${functionName}(${paramsString}) {\n${codeBody}\n}\n\n// Call the function with input\n${functionCall}${functionCall.trim().endsWith(';') ? '' : ';'}`
   }
 
-  const loadTemplate = () => {
-    setReturnType('int')
-    setFunctionName('factorial')
-    setParameters([{ id: Date.now(), type: 'int', name: 'n' }])
-    setCodeBody('    if (n <= 1) {\n        return 1;\n    }\n    return n * factorial(n - 1);')
-    setFunctionCall('factorial(5)')
-  }
-
   return (
     <Card className="app-panel overflow-hidden">
       <div className="app-panel-head flex items-center justify-between">
@@ -52,13 +44,6 @@ export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
       </div>
 
       <div className="space-y-6 p-5 flex flex-col">
-        <div className="flex items-center justify-between">
-          <Label className="text-foreground font-semibold">Java recursive method builder</Label>
-          <Button variant="outline" size="sm" onClick={loadTemplate} className="app-btn-secondary h-8 text-xs">
-            Load template
-          </Button>
-        </div>
-
 
         {/* Builder UI */}
         <div className="rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
