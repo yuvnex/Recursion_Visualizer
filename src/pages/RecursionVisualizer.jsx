@@ -98,6 +98,44 @@ const simulators = {
     simulate(exp)
     return steps
   },
+
+  mergeSort: ({ arr }) => {
+    const steps = []
+    let counter = 0
+    const simulate = (subArr, parentId = null) => {
+      const id = counter++
+      const isBase = subArr.length <= 1
+      steps.push({
+        type: 'call',
+        nodeId: id,
+        parentId,
+        label: `mergeSort([${subArr.join(',')}])`,
+        params: { arr: [...subArr] },
+        isBaseCase: isBase,
+      })
+      if (isBase) {
+        steps.push({ type: 'return', nodeId: id, value: [...subArr], isBaseCase: true })
+        return { id, result: [...subArr] }
+      }
+      const mid = Math.floor(subArr.length / 2)
+      const leftChild = simulate(subArr.slice(0, mid), id)
+      const rightChild = simulate(subArr.slice(mid), id)
+      // merge
+      const merged = []
+      let i = 0, j = 0
+      const l = leftChild.result, r = rightChild.result
+      while (i < l.length && j < r.length) {
+        if (l[i] <= r[j]) merged.push(l[i++])
+        else merged.push(r[j++])
+      }
+      while (i < l.length) merged.push(l[i++])
+      while (j < r.length) merged.push(r[j++])
+      steps.push({ type: 'return', nodeId: id, value: merged })
+      return { id, result: merged }
+    }
+    simulate(arr)
+    return steps
+  },
 }
 
 const COMPLEXITY = {
@@ -106,6 +144,7 @@ const COMPLEXITY = {
   binarySearch: { time: 'O(log₂ n)',   space: 'O(log₂ n)' },
   sumArray:     { time: 'O(n)',        space: 'O(n)' },
   power:        { time: 'O(n)',        space: 'O(n)' },
+  mergeSort:    { time: 'O(n log n)',  space: 'O(n)' },
 }
 
 export default function RecursionVisualizer() {

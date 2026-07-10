@@ -99,6 +99,38 @@ export const EXAMPLES = [
   return base * power(base, exp - 1);
 }`,
   },
+  {
+    id: 'mergeSort',
+    name: 'Merge Sort',
+    difficulty: 'Advanced',
+    description: 'Sort an array using divide-and-conquer recursion',
+    input: { arr: [5, 3, 8, 1, 4] },
+    code: `function mergeSort(arr) {
+  // Base case: arrays of length 0 or 1 are already sorted
+  if (arr.length <= 1) {
+    return arr;
+  }
+  // Divide: split array in half
+  let mid = Math.floor(arr.length / 2);
+  let left = mergeSort(arr.slice(0, mid));
+  let right = mergeSort(arr.slice(mid));
+  // Conquer: merge sorted halves
+  return merge(left, right);
+}
+
+function merge(left, right) {
+  let result = [];
+  let i = 0, j = 0;
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) {
+      result.push(left[i++]);
+    } else {
+      result.push(right[j++]);
+    }
+  }
+  return result.concat(left.slice(i)).concat(right.slice(j));
+}`,
+  },
 ]
 
 export default function ExampleSelector({ selectedExample, onSelect }) {
