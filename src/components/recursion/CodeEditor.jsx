@@ -54,7 +54,7 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
               </div>
             ))}
           </div>
-          <div className="flex-1 overflow-x-auto py-4">
+          <div className="flex-1 overflow-x-auto py-4 scrollbar-hide">
             {lines.map((line, i) => {
               const isBaseCase = isBaseCaseLine(line)
               const isRecursive = isRecursiveCallLine(line)

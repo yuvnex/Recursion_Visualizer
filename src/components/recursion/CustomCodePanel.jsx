@@ -50,7 +50,7 @@ export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
           <div className="bg-muted/30 px-4 py-3 border-b border-border/50">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Method Signature</span>
           </div>
-          <div className="p-4 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+          <div className="p-4 overflow-x-auto pb-6 scrollbar-hide">
             <div className="flex items-end gap-3 min-w-max">
               <div className="space-y-1.5 shrink-0 w-28">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Return Type</Label>
