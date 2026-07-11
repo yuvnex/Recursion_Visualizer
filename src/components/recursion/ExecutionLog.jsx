@@ -22,7 +22,7 @@ export default function ExecutionLog({ logs }) {
         <span className="ml-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{logs.length} events</span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto bg-background p-3 font-mono text-xs">
+      <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto bg-background p-3 font-mono text-xs scrollbar-hide">
         <AnimatePresence>
           {logs.map((log, index) => (
             <motion.div

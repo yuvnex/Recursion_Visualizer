@@ -45,7 +45,7 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-background">
+      <div className="flex-1 overflow-auto bg-background scrollbar-hide">
         <div className="flex">
           <div className="flex-shrink-0 select-none border-r border-border/50 bg-muted/20 py-4 pl-3 pr-4">
             {lines.map((_, i) => (

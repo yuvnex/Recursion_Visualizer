@@ -16,7 +16,7 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
         </span>
       </div>
 
-      <div className="flex-1 overflow-auto bg-background p-4">
+      <div className="flex-1 overflow-auto bg-background p-4 scrollbar-hide">
         <div className="flex flex-col-reverse gap-2">
           <AnimatePresence mode="popLayout">
             {stack.map((frame, index) => {
