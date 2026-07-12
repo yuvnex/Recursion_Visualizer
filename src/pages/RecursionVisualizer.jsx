@@ -172,6 +172,9 @@ export default function RecursionVisualizer() {
   const stepIndexRef = useRef(0)
   const animationRef = useRef(null)
   const isPausedRef = useRef(false)
+  const codeRef = useRef(EXAMPLES[0].code)
+  // Keep a ref in sync so executeStep can always read the latest code without a stale closure
+  const setCodeAndRef = (c) => { codeRef.current = c; setCode(c) }
 
   useEffect(() => { isPausedRef.current = isPaused }, [isPaused])
   useEffect(() => {
@@ -191,6 +194,16 @@ export default function RecursionVisualizer() {
     stepsRef.current = []; stepIndexRef.current = 0
   }, [])
 
+  // Scan the current code for the best matching line index (0-based)
+  const findLine = (patterns) => {
+    const lines = codeRef.current.split('\n')
+    for (const pattern of patterns) {
+      const idx = lines.findIndex(l => l.toLowerCase().includes(pattern.toLowerCase()))
+      if (idx !== -1) return idx
+    }
+    return null
+  }
+
   const executeStep = useCallback((step) => {
     if (step.type === 'call') {
       setExecutionPhase('calling')
@@ -198,14 +211,24 @@ export default function RecursionVisualizer() {
       setNodes(prev => [...prev, { id: step.nodeId, parentId: step.parentId, label: step.label, params: step.params, isBaseCase: step.isBaseCase, returned: false }])
       setStack(prev => [...prev, { id: step.nodeId, label: step.label, params: step.params }])
       setLogs(prev => [...prev, { type: step.isBaseCase ? 'base' : 'call', message: `→ ${step.label}${step.isBaseCase ? '  [base]' : ''}` }])
-      setCurrentLine(step.isBaseCase ? 2 : 6)
+      // Point to the base-case condition line, or the recursive call line
+      if (step.isBaseCase) {
+        setCurrentLine(findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (arr.length <= 1)']))
+      } else {
+        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'let left = mergeSort', 'left = mergeSort']))
+      }
     } else {
       setExecutionPhase('returning')
       setCurrentNodeId(step.nodeId)
       setNodes(prev => prev.map(n => n.id === step.nodeId ? { ...n, returned: true, returnValue: step.value } : n))
       setStack(prev => prev.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId))
       setLogs(prev => [...prev, { type: 'return', message: `← ${step.label ?? `node ${step.nodeId}`}  =  ${step.value}` }])
-      setCurrentLine(step.isBaseCase ? 3 : 7)
+      // Point to the actual return statement
+      if (step.isBaseCase) {
+        setCurrentLine(findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;']))
+      } else {
+        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge(']))
+      }
     }
   }, [])
 
@@ -280,7 +303,7 @@ export default function RecursionVisualizer() {
         code,
         language,
       })
-      setCode(code)
+      setCodeAndRef(code)
       setIsAnalyzing(false)
     } catch (error) {
       console.error('Analysis error:', error)
@@ -290,14 +313,14 @@ export default function RecursionVisualizer() {
   }, [])
 
   const handleSelectExample = useCallback((example) => {
-    setSelectedExample(example); setCode(example.code)
+    setSelectedExample(example); setCodeAndRef(example.code)
     setCustomCodeData(null); setAnalysisError(null); handleReset()
   }, [handleReset])
 
   const handleModeChange = useCallback((newMode) => {
     setMode(newMode); handleReset(); setAnalysisError(null)
     if (newMode === 'examples') {
-      setCode(EXAMPLES[0].code); setSelectedExample(EXAMPLES[0]); setCustomCodeData(null)
+      setCodeAndRef(EXAMPLES[0].code); setSelectedExample(EXAMPLES[0]); setCustomCodeData(null)
     }
   }, [handleReset])
 
