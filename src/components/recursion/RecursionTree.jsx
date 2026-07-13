@@ -24,15 +24,22 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
   const contentRef = useRef(null)
   const [fitScale, setFitScale] = useState(1)
 
-  const treeData = useMemo(() => {
-    if (!nodes || nodes.length === 0) return null
+  const { treeData, labelFrequencies, maxFreq } = useMemo(() => {
+    if (!nodes || nodes.length === 0) return { treeData: null, labelFrequencies: {}, maxFreq: 1 }
 
     const nodeMap = {}
+    const freqs = {}
+    let max = 1
+
     nodes.forEach(node => {
       nodeMap[node.id] = {
         ...node,
         children: [],
       }
+      
+      const label = getNodeLabel(node)
+      freqs[label] = (freqs[label] || 0) + 1
+      if (freqs[label] > max) max = freqs[label]
     })
 
     let root = null
@@ -44,7 +51,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
       }
     })
 
-    return root
+    return { treeData: root, labelFrequencies: freqs, maxFreq: max }
   }, [nodes])
 
   const layout = useMemo(() => {
@@ -115,25 +122,32 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
   const getNodeStyle = (node, depth = 0) => {
     const isActive = node.id === currentNodeId
+    const label = getNodeLabel(node)
+    const freq = labelFrequencies[label] || 1
 
-    const emeraldBgs = [
-      'bg-emerald-600 border-emerald-700', // depth 0
-      'bg-emerald-500 border-emerald-600', // depth 1
-      'bg-emerald-400 border-emerald-500', // depth 2
-      'bg-emerald-300 border-emerald-400', // depth 3
-      'bg-emerald-200 border-emerald-300', // depth 4+
-    ]
-    const textColors = [
-      'text-white', // depth 0
-      'text-white', // depth 1
-      'text-emerald-950', // depth 2
-      'text-emerald-950', // depth 3
-      'text-emerald-950', // depth 4+
-    ]
+    let defaultBg, defaultText
 
-    const bgIndex = Math.min(depth, emeraldBgs.length - 1)
-    const defaultBg = emeraldBgs[bgIndex]
-    const defaultText = textColors[bgIndex]
+    if (freq <= 1) {
+      defaultBg = 'bg-blue-500 border-blue-600'
+      defaultText = 'text-white'
+    } else {
+      const effectiveMax = Math.max(maxFreq, 4)
+      const ratio = Math.min((freq - 1) / (effectiveMax - 1), 1)
+      
+      const heatColors = [
+        { bg: 'bg-blue-500 border-blue-600', text: 'text-white' },
+        { bg: 'bg-indigo-500 border-indigo-600', text: 'text-white' },
+        { bg: 'bg-violet-500 border-violet-600', text: 'text-white' },
+        { bg: 'bg-purple-500 border-purple-600', text: 'text-white' },
+        { bg: 'bg-fuchsia-500 border-fuchsia-600', text: 'text-white' },
+        { bg: 'bg-rose-500 border-rose-600', text: 'text-white' },
+        { bg: 'bg-red-500 border-red-600', text: 'text-white' },
+      ]
+      
+      const index = Math.min(Math.round(ratio * (heatColors.length - 1)), heatColors.length - 1)
+      defaultBg = heatColors[index].bg
+      defaultText = heatColors[index].text
+    }
 
     if (isActive && executionPhase === 'calling') {
       return {
@@ -144,7 +158,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
     if (isActive && executionPhase === 'returning') {
       return {
-        container: `scale-[1.1] border-[3px] border-blue-400 ${defaultBg} shadow-lg shadow-blue-500/40 z-10`,
+        container: `scale-[1.1] border-[3px] border-emerald-400 ${defaultBg} shadow-lg shadow-emerald-500/40 z-10`,
         text: `${defaultText} text-lg`,
       }
     }

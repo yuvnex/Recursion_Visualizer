@@ -3,14 +3,13 @@ import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Layers, ArrowUp, ArrowDown } from 'lucide-react'
 
-// Soft pastel rainbow — light, airy, perfect on white backgrounds
+// Premium Gradient Theme — Rich, highly attractive saturated gradients
 const DEPTH_STYLES = [
-  { card: 'bg-violet-100 border-violet-200', label: 'text-violet-900', sub: 'text-violet-500', badge: 'bg-violet-500 border-violet-600 text-white', dot: 'bg-violet-400' },
-  { card: 'bg-blue-100   border-blue-200',   label: 'text-blue-900',   sub: 'text-blue-500',   badge: 'bg-blue-500   border-blue-600   text-white', dot: 'bg-blue-400'   },
-  { card: 'bg-cyan-100   border-cyan-200',   label: 'text-cyan-900',   sub: 'text-cyan-500',   badge: 'bg-cyan-500   border-cyan-600   text-white', dot: 'bg-cyan-400'   },
-  { card: 'bg-emerald-100 border-emerald-200', label: 'text-emerald-900', sub: 'text-emerald-500', badge: 'bg-emerald-500 border-emerald-600 text-white', dot: 'bg-emerald-400' },
-  { card: 'bg-pink-100   border-pink-200',   label: 'text-pink-900',   sub: 'text-pink-500',   badge: 'bg-pink-500   border-pink-600   text-white', dot: 'bg-pink-400'   },
-  { card: 'bg-rose-100   border-rose-200',   label: 'text-rose-900',   sub: 'text-rose-500',   badge: 'bg-rose-500   border-rose-600   text-white', dot: 'bg-rose-400'   },
+  { card: 'bg-gradient-to-r from-violet-600 to-indigo-600 border-indigo-500/40 shadow-lg shadow-indigo-500/20 text-white', label: 'text-white', sub: 'text-indigo-100', badge: 'bg-white/20 border-white/10 text-white font-mono', dot: 'bg-white' },
+  { card: 'bg-gradient-to-r from-rose-500 to-orange-500 border-orange-400/40 shadow-lg shadow-orange-500/20 text-white', label: 'text-white', sub: 'text-orange-100', badge: 'bg-white/20 border-white/10 text-white font-mono', dot: 'bg-white' },
+  { card: 'bg-gradient-to-r from-cyan-500 to-blue-600 border-blue-500/40 shadow-lg shadow-blue-500/20 text-white', label: 'text-white', sub: 'text-blue-100', badge: 'bg-white/20 border-white/10 text-white font-mono', dot: 'bg-white' },
+  { card: 'bg-gradient-to-r from-emerald-400 to-teal-600 border-teal-500/40 shadow-lg shadow-teal-500/20 text-white', label: 'text-white', sub: 'text-teal-50', badge: 'bg-white/20 border-white/10 text-white font-mono', dot: 'bg-white' },
+  { card: 'bg-gradient-to-r from-fuchsia-500 to-purple-600 border-purple-500/40 shadow-lg shadow-purple-500/20 text-white', label: 'text-white', sub: 'text-purple-100', badge: 'bg-white/20 border-white/10 text-white font-mono', dot: 'bg-white' },
 ]
 
 export default function CallStack({ stack, currentNodeId, executionPhase }) {
@@ -27,7 +26,7 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
       </div>
 
       <div className="flex-1 overflow-auto bg-background p-4 scrollbar-hide">
-        <div className="flex flex-col-reverse gap-2">
+        <div className="flex flex-col-reverse gap-2.5">
           <AnimatePresence mode="popLayout">
             {stack.map((frame, index) => {
               const isTop    = index === stack.length - 1
@@ -35,12 +34,12 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
               const s        = DEPTH_STYLES[index % DEPTH_STYLES.length]
 
               const ringClass = isActive && executionPhase === 'calling'
-                ? 'ring-2 ring-indigo-400 shadow-md shadow-indigo-200/60 scale-[1.02] z-10'
+                ? 'ring-[2.5px] ring-white shadow-[0_0_20px_rgba(255,255,255,0.6)] scale-[1.03] z-10'
                 : isActive && executionPhase === 'returning'
-                ? 'ring-2 ring-blue-400  shadow-md shadow-blue-200/60  scale-[1.02] z-10'
+                ? 'ring-[2.5px] ring-amber-300 shadow-[0_0_20px_rgba(252,211,77,0.6)] scale-[1.03] z-10'
                 : isTop
-                ? 'ring-2 ring-gray-300  shadow-sm scale-[1.01] z-10'
-                : 'opacity-90'
+                ? 'ring-1 ring-black/10 shadow-md scale-[1.01] z-10'
+                : 'opacity-90 scale-100 hover:opacity-100'
 
               return (
                 <motion.div
@@ -51,10 +50,10 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
                   layout
                   className={`relative rounded-xl border p-3.5 transition-all duration-200 ${s.card} ${ringClass}`}
                 >
-                  <div className={`absolute -left-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full border-2 border-background ${s.dot}`} />
+                  <div className={`absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-[2.5px] border-background ${isActive ? (executionPhase === 'calling' ? 'bg-white' : 'bg-amber-300') : s.dot}`} />
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between ml-1">
+                    <div className="flex items-center gap-2.5">
                       {isTop && (
                         <motion.div animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 1.8 }}>
                           {executionPhase === 'returning'
@@ -62,16 +61,16 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
                             : <ArrowDown className={`h-4 w-4 ${s.label}`} />}
                         </motion.div>
                       )}
-                      <code className={`font-mono text-sm font-semibold ${s.label}`}>
+                      <span className={`text-[15.5px] font-sans font-extrabold tracking-wide ${s.label}`}>
                         {frame.label}
-                      </code>
+                      </span>
                     </div>
 
                     {frame.returnValue !== undefined && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={`rounded-full border px-2 py-0.5 text-xs font-semibold shadow-sm ${s.badge}`}
+                        className={`rounded-md border px-2 py-0.5 text-xs font-semibold shadow-sm ${s.badge}`}
                       >
                         → {String(frame.returnValue)}
                       </motion.div>
@@ -79,11 +78,11 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
                   </div>
 
                   {frame.params && (
-                    <div className={`mt-2 pl-6 font-mono text-xs ${s.sub}`}>
+                    <div className={`mt-1.5 pl-7 text-[13px] flex flex-wrap gap-x-4 gap-y-1 ${s.sub}`}>
                       {Object.entries(frame.params).map(([key, value]) => (
-                        <span key={key} className="mr-3">
-                          <span className="font-medium opacity-80">{key}:</span>{' '}
-                          <span className={`font-bold ${s.label}`}>{JSON.stringify(value)}</span>
+                        <span key={key} className="flex items-center gap-1.5">
+                          <span className="opacity-70">{key}:</span>
+                          <span className={`font-medium ${s.label}`}>{JSON.stringify(value)}</span>
                         </span>
                       ))}
                     </div>
