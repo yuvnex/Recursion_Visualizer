@@ -297,28 +297,27 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
-      <div className="app-panel-head flex items-center gap-3">
-        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
-          <GitBranch className="h-3.5 w-3.5" />
+      <div className="bg-[#059669] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
+        <span>Recursion Tree</span>
+        <div className="absolute right-4 flex items-center gap-3">
+          {treeData && (
+            <span className="rounded-full bg-white/20 px-2.5 py-0.5 font-mono text-xs font-medium">
+              {nodes?.length} calls
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="bg-white/10 hover:bg-white/20 rounded-md p-1.5 transition-colors"
+            aria-label={isExpanded ? 'Minimize recursion tree' : 'Maximize recursion tree'}
+            title={isExpanded ? 'Minimize' : 'Maximize'}
+          >
+            {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
         </div>
-        <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Recursion tree</span>
-        {treeData && (
-          <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs font-medium text-muted-foreground">
-            {nodes?.length} calls
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={onToggleExpand}
-          className={`${treeData ? '' : 'ml-auto '}app-btn-secondary rounded-md p-1.5`}
-          aria-label={isExpanded ? 'Minimize recursion tree' : 'Maximize recursion tree'}
-          title={isExpanded ? 'Minimize' : 'Maximize'}
-        >
-          {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-        </button>
       </div>
 
-      <div ref={viewportRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-background p-6">
+      <div ref={viewportRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent p-6">
         <AnimatePresence>
           {treeData ? (
             <div className="flex min-h-full items-start justify-center">

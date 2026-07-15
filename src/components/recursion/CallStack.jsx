@@ -13,12 +13,12 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
   }, [stack]);
 
   return (
-    <div className="flex h-full flex-col bg-white relative w-full overflow-hidden shadow-sm border border-gray-200 rounded-lg">
+    <div className="flex h-full flex-col bg-card relative w-full overflow-hidden shadow-sm border border-border/60 rounded-xl">
       <div className="bg-[#4a3bce] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm">
         Stack
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-white px-5 py-6 flex flex-col-reverse justify-start gap-4 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="flex-1 overflow-y-auto bg-transparent px-5 py-6 flex flex-col-reverse justify-start gap-4 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {stack.length === 0 && (
           <div className="flex-1 flex items-center justify-center text-gray-400 font-medium">
             Stack is empty
@@ -35,11 +35,6 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
         <div ref={topRef} />
       </div>
 
-      {hasParams && (
-        <div className="absolute bottom-0 left-0 bg-[#252526] text-white text-[15px] px-3 py-1.5 font-sans z-20 max-w-full truncate rounded-tr-sm">
-          Variables {Object.entries(topFrame.params).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(' and ')}
-        </div>
-      )}
     </div>
   )
 }

@@ -67,19 +67,20 @@
     @apply scroll-smooth;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply text-foreground antialiased bg-fixed bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-100 via-sky-50 to-emerald-100 dark:from-indigo-950 dark:via-slate-900 dark:to-emerald-950;
     font-family: theme('fontFamily.sans');
     font-feature-settings: 'calt' 1, 'liga' 1;
+    min-height: 100vh;
   }
 }
 
 @layer components {
   .app-shell {
-    @apply min-h-screen bg-background text-foreground;
+    @apply min-h-screen text-foreground;
   }
 
   .app-panel {
-    @apply rounded-xl border border-border/60 bg-card shadow-sm;
+    @apply rounded-xl border border-white/60 bg-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] backdrop-blur-xl dark:border-white/10 dark:bg-black/40 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
   }
 
   .app-panel-head {

@@ -34,24 +34,11 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
 
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
-      <div className="app-panel-head flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <Code2 className="h-3.5 w-3.5" />
-          </div>
-          <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Source</span>
-        </div>
-        <div className="flex gap-2">
-          <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 text-xs font-medium">
-            Base case
-          </Badge>
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-medium">
-            Recursive call
-          </Badge>
-        </div>
+      <div className="bg-[#0284c7] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
+        <span>Source Code</span>
       </div>
 
-      <div className="flex-1 overflow-auto bg-background scrollbar-hide relative">
+      <div className="flex-1 overflow-auto bg-transparent scrollbar-hide relative">
         <div className="flex relative">
 
           {/* Gutter: line numbers + execution arrow */}

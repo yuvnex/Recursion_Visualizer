@@ -14,15 +14,12 @@ export default function ExecutionLog({ logs }) {
 
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
-      <div className="app-panel-head flex items-center gap-3">
-        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
-          <ListOrdered className="h-3.5 w-3.5" />
-        </div>
-        <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Execution log</span>
-        <span className="ml-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{logs.length} events</span>
+      <div className="bg-[#7c3aed] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
+        <span>Execution Log</span>
+        <span className="absolute right-4 text-sm font-medium bg-white/20 px-2.5 py-0.5 rounded-full">{logs.length} events</span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto bg-background p-3 font-mono text-xs scrollbar-hide">
+      <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto bg-transparent p-3 font-mono text-xs scrollbar-hide">
         <AnimatePresence>
           {logs.map((log, index) => (
             <motion.div

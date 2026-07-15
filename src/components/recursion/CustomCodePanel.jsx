@@ -34,13 +34,8 @@ export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
 
   return (
     <Card className="app-panel overflow-hidden">
-      <div className="app-panel-head flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <Code className="h-3.5 w-3.5" />
-          </div>
-          <span className="text-sm font-semibold tracking-wide uppercase text-foreground">Custom Java code</span>
-        </div>
+      <div className="bg-[#ea580c] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
+        <span>Custom Java Code</span>
       </div>
 
       <div className="space-y-6 p-5 flex flex-col">

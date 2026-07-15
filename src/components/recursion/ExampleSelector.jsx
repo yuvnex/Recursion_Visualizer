@@ -136,11 +136,8 @@ function merge(left, right) {
 export default function ExampleSelector({ selectedExample, onSelect }) {
   return (
     <Card className="app-panel overflow-hidden">
-      <div className="app-panel-head flex items-center gap-3">
-        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
-          <BookOpen className="h-3.5 w-3.5" />
-        </div>
-        <span className="text-sm font-semibold text-foreground tracking-wide uppercase">Example problems</span>
+      <div className="bg-[#334155] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
+        <span>Example Problems</span>
       </div>
       <div className="p-5">
 
