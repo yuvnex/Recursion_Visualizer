@@ -369,10 +369,10 @@ export default function RecursionVisualizer() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="lg:col-span-4 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
+            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
               <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
             </div>
-            <div className="lg:col-span-5 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
+            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
               <RecursionTree
                 nodes={nodes}
                 currentNodeId={currentNodeId}
@@ -381,13 +381,11 @@ export default function RecursionVisualizer() {
                 onToggleExpand={toggleTreeExpand}
               />
             </div>
-            <div className="lg:col-span-3 flex flex-col gap-5 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
-              <div className="flex-1 min-h-0">
-                <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
-              </div>
-              <div className="h-44 min-h-[11rem] shrink-0">
-                <ExecutionLog logs={logs} />
-              </div>
+            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
+              <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
+            </div>
+            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
+              <ExecutionLog logs={logs} />
             </div>
           </motion.div>
         )}
