@@ -335,7 +335,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
               <GitBranch className="h-10 w-10 text-border" />
-              <p className="text-sm font-medium">Press Run or Step to build the tree</p>
+              <p className="font-sans text-sm text-muted-foreground">Press Run or Step to build the tree</p>
             </div>
           )}
         </AnimatePresence>

@@ -18,7 +18,7 @@ export default function ExecutionLog({ logs }) {
         <span>Execution Log</span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto bg-transparent p-3 font-mono text-xs scrollbar-hide">
+      <div ref={scrollRef} className="relative flex-1 space-y-2 overflow-auto bg-transparent p-3 font-mono text-xs scrollbar-hide">
         <AnimatePresence>
           {logs.map((log, index) => (
             <motion.div
@@ -47,9 +47,9 @@ export default function ExecutionLog({ logs }) {
         </AnimatePresence>
 
         {logs.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground pointer-events-none">
             <ListOrdered className="h-8 w-8 text-border" />
-            <p className="text-xs">Run or step to see events</p>
+            <p className="font-sans text-sm text-muted-foreground">Run or step to see events</p>
           </div>
         )}
       </div>

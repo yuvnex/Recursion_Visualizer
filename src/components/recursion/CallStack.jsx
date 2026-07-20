@@ -20,8 +20,8 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
 
       <div className="flex-1 overflow-y-auto bg-transparent px-5 py-6 flex flex-col-reverse justify-start gap-4 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {stack.length === 0 && (
-          <div className="flex-1 flex items-center justify-center text-gray-400 font-medium">
-            Stack is empty
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+            <p className="font-sans text-sm text-muted-foreground">Stack is empty</p>
           </div>
         )}
         
