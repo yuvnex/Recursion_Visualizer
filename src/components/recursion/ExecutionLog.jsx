@@ -16,7 +16,6 @@ export default function ExecutionLog({ logs }) {
     <Card className="app-panel flex h-full flex-col overflow-hidden">
       <div className="bg-[#7c3aed] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
         <span>Execution Log</span>
-        <span className="absolute right-4 text-sm font-medium bg-white/20 px-2.5 py-0.5 rounded-full">{logs.length} events</span>
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto bg-transparent p-3 font-mono text-xs scrollbar-hide">
