@@ -94,6 +94,7 @@ export default function CustomCodePanel({ onAnalyze, isAnalyzing, error }) {
             <Textarea
               value={codeBody}
               onChange={e => setCodeBody(e.target.value)}
+              spellCheck={false}
               placeholder="    // recursive logic here"
               className="min-h-[200px] h-full resize-y border-0 bg-transparent font-mono text-sm text-foreground shadow-none focus-visible:ring-0 leading-relaxed"
             />

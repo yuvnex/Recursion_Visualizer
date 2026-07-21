@@ -134,7 +134,8 @@ function transpileCStyle(code) {
   r = r.replace(/\bnew\s+String\s*\(\s*([^)]+)\s*\)/g, (match, arg) => {
     return `(Array.isArray(${arg}) ? ${arg}.join("") : String(${arg}))`
   })
-  r = r.replace(/\bnew\s+(int|double|float|long|bool)\b/g, '')
+  // Remove `new int` but NOT `new int[` (which is handled by array literal logic)
+  r = r.replace(/\bnew\s+(int|double|float|long|bool)\b(?!\s*\[)/g, '')
 
   // STEP 10: Java String methods → JS equivalents
   r = r.replace(/\.length\s*\(\s*\)/g, '.length')

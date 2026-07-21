@@ -301,11 +301,11 @@ function transpilePython(code) {
 function transpileToJS(code, language) {
   switch (language) {
     case 'javascript': return code
-    case 'python':     return transpilePython(code)
+    case 'python': return transpilePython(code)
     case 'java':
     case 'cpp':
-    case 'c':          return transpileCStyle(code)
-    default:           return code
+    case 'c': return transpileCStyle(code)
+    default: return code
   }
 }
 
@@ -317,13 +317,13 @@ export function debugTranspileToJS(code, language) {
 // ─── Detect recursive function name ──────────────────────────────────────────
 
 const IGNORED = new Set([
-  'println','print','printf','fprintf','sprintf','scanf','log','warn','error',
-  'console','System','out','err','main','Main','setup','init','run','start',
-  'Math','parseInt','parseFloat','Number','String','Boolean','Array','Object',
-  'JSON','Date','Promise','Map','Set','setTimeout','setInterval','fetch',
-  'assert','expect','describe','it','test','len','range','list','dict','tuple',
-  '__len','sorted','reversed','enumerate','zip',
-  'malloc','calloc','free','sizeof','memcpy','memset','strcmp','strcpy',
+  'println', 'print', 'printf', 'fprintf', 'sprintf', 'scanf', 'log', 'warn', 'error',
+  'console', 'System', 'out', 'err', 'main', 'Main', 'setup', 'init', 'run', 'start',
+  'Math', 'parseInt', 'parseFloat', 'Number', 'String', 'Boolean', 'Array', 'Object',
+  'JSON', 'Date', 'Promise', 'Map', 'Set', 'setTimeout', 'setInterval', 'fetch',
+  'assert', 'expect', 'describe', 'it', 'test', 'len', 'range', 'list', 'dict', 'tuple',
+  '__len', 'sorted', 'reversed', 'enumerate', 'zip',
+  'malloc', 'calloc', 'free', 'sizeof', 'memcpy', 'memset', 'strcmp', 'strcpy',
   // Note: 'sum', 'max', 'min', 'abs' removed — these are legitimate user function names
 ])
 
@@ -351,7 +351,7 @@ function getDefinedFunctionNames(jsCode) {
 
 function detectInvocation(jsCode, definedNames) {
   const lines = jsCode.split('\n')
-  
+
   const isIgnorableLine = (t) => {
     if (!t) return true
     if (t.startsWith('//') || t.startsWith('#') || t.startsWith('*') || t.startsWith('/*')) return true
@@ -398,7 +398,7 @@ function detectInvocation(jsCode, definedNames) {
       else if (ch === '}') depth = Math.max(0, depth - 1)
     }
     let lineEndsAt0 = (depth === 0)
-    
+
     // If it started and ended at 0, it's a top-level statement
     if (lineStartsAt0 && lineEndsAt0) {
       topLevelLines.push(trimmed)
@@ -484,7 +484,7 @@ function executeWithTracing(jsCode, definedNames, entry) {
     return function (...args) {
       const id = nodeId++
       const parentId = stack.length ? stack[stack.length - 1] : null
-      
+
       const clone = (v) => {
         if (v === null || typeof v !== 'object') return v
         if (Array.isArray(v)) return v.map(clone)
@@ -549,9 +549,9 @@ function executeWithTracing(jsCode, definedNames, entry) {
     // We pass __trace (our factory) and console.log into the sandbox
     // eslint-disable-next-line no-new-func
     new Function('__trace', 'console', sandboxCode)(guardedTrace, {
-      log: () => {},
-      warn: () => {},
-      error: () => {},
+      log: () => { },
+      warn: () => { },
+      error: () => { },
     })
 
     if (steps.length === 0) {
@@ -562,7 +562,7 @@ function executeWithTracing(jsCode, definedNames, entry) {
   } catch (e) {
     // Re-throw with cleaner message
     const msg = e.message || String(e)
-    
+
     // Specific error detection with helpful hints
     if (msg.includes('Unexpected token') || msg.includes('SyntaxError')) {
       throw new Error(
@@ -579,7 +579,7 @@ function executeWithTracing(jsCode, definedNames, entry) {
         `Type annotations (int, String[], etc.) are automatically removed.`
       )
     }
-    
+
     if (msg.includes('is not a function') || msg.includes('is not defined')) {
       throw new Error(
         `Could not execute function "${entry.name}".\n\n` +
