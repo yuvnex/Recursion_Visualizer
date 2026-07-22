@@ -104,7 +104,7 @@ export const EXAMPLES = [
     name: 'Merge Sort',
     difficulty: 'Advanced',
     description: 'Sort an array using divide-and-conquer recursion',
-    input: { arr: [5, 3, 8, 1, 4] },
+    input: { arr: [4, 1, 3, 9, 7] },
     code: `function mergeSort(arr) {
   // Base case: arrays of length 0 or 1 are already sorted
   if (arr.length <= 1) {
@@ -141,39 +141,38 @@ export default function ExampleSelector({ selectedExample, onSelect }) {
       </div>
       <div className="p-5">
 
-      <div className="flex flex-wrap gap-2.5">
-        {EXAMPLES.map((example, index) => (
-          <motion.div
-            key={example.id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.03, duration: 0.2 }}
-          >
-            <button
-              onClick={() => onSelect(example)}
-              className={`relative flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                selectedExample?.id === example.id
-                  ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
+        <div className="flex flex-wrap gap-2.5">
+          {EXAMPLES.map((example, index) => (
+            <motion.div
+              key={example.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.03, duration: 0.2 }}
             >
-              {example.name}
-            </button>
-          </motion.div>
-        ))}
-      </div>
+              <button
+                onClick={() => onSelect(example)}
+                className={`relative flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${selectedExample?.id === example.id
+                    ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+              >
+                {example.name}
+              </button>
+            </motion.div>
+          ))}
+        </div>
 
-      {selectedExample && (
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 rounded-xl border border-border/50 bg-muted/20 p-4 shadow-sm"
-        >
-          <p className="font-mono text-sm text-muted-foreground">
-            {formatInput(selectedExample.input)}
-          </p>
-        </motion.div>
-      )}
+        {selectedExample && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 rounded-xl border border-border/50 bg-muted/20 p-4 shadow-sm"
+          >
+            <p className="font-mono text-sm text-muted-foreground">
+              {formatInput(selectedExample.input)}
+            </p>
+          </motion.div>
+        )}
       </div>
     </Card>
   )
