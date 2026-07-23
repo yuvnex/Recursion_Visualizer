@@ -26,11 +26,6 @@ An interactive tool to visualize how recursive functions execute step by step. W
 - Java (transpiled to JS)
 - C / C++ (transpiled to JS)
 
-🎮 **Full Execution Control**
-- Run automatically or step through manually
-- Adjustable animation speed (0.25x to 2x)
-- Pause, resume, and reset at any time
-- Real-time step counter
 
 🎨 **Professional UI**
 - Clean, modern design
