@@ -362,17 +362,15 @@ export default function RecursionVisualizer() {
           </motion.div>
         )}
 
+        {/* ── Recursion Tree: FULL WIDTH, top section ── */}
         {showVisualizer && (
           <motion.div
-            className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-6"
+            className="mb-5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.25 }}
           >
-            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
-              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
-            </div>
-            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
+            <div className="min-h-[480px] h-[min(60vh,640px)]">
               <RecursionTree
                 nodes={nodes}
                 currentNodeId={currentNodeId}
@@ -381,10 +379,24 @@ export default function RecursionVisualizer() {
                 onToggleExpand={toggleTreeExpand}
               />
             </div>
-            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
+          </motion.div>
+        )}
+
+        {/* ── Code Editor, Call Stack, Execution Log: 3-column row below ── */}
+        {showVisualizer && (
+          <motion.div
+            className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
+              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
+            </div>
+            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
               <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
             </div>
-            <div className="lg:col-span-3 min-h-[420px] h-[min(52vh,560px)] lg:h-[560px]">
+            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
               <ExecutionLog logs={logs} />
             </div>
           </motion.div>

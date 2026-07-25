@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitBranch, ArrowDown, ArrowUp, Maximize2, Minimize2 } from 'lucide-react'
+import { GitBranch, Maximize2, Minimize2 } from 'lucide-react'
 
 const getNodeLabel = (node) => {
   if (!node.params) return node.label
@@ -19,9 +19,92 @@ const getNodeLabel = (node) => {
   return `${fnName}(${paramsStr})`
 }
 
+// ── SVG-based vertical tree renderer with pan & zoom ─────────────────────────
+
+const NODE_H = 44           // height of a node pill
+const NODE_PAD_X = 20       // horizontal padding inside the pill
+const LEVEL_GAP_Y = 72      // vertical gap between tree levels
+const SIBLING_GAP = 24      // minimum horizontal gap between siblings
+const RETURN_TAG_H = 18     // height of the return value tag
+
+function measureTextWidth(text) {
+  // Approximate monospace char width for 13px font
+  return text.length * 8.2 + NODE_PAD_X * 2
+}
+
+function layoutTree(root) {
+  if (!root) return { positioned: [], edges: [], width: 0, height: 0 }
+
+  // 1. Build a map of subtree widths (bottom-up)
+  const subtreeWidth = {}
+  const computeWidth = (node) => {
+    const label = getNodeLabel(node)
+    const nodeW = Math.max(80, measureTextWidth(label))
+    const children = node.children ?? []
+    if (children.length === 0) {
+      subtreeWidth[node.id] = nodeW
+      return nodeW
+    }
+    const childWidths = children.map(computeWidth)
+    const totalChildSpan = childWidths.reduce((a, b) => a + b, 0) + SIBLING_GAP * (children.length - 1)
+    subtreeWidth[node.id] = Math.max(nodeW, totalChildSpan)
+    return subtreeWidth[node.id]
+  }
+  computeWidth(root)
+
+  // 2. Assign (x, y) positions top-down
+  const positioned = []
+  const edges = []
+
+  const assign = (node, cx, depth) => {
+    const label = getNodeLabel(node)
+    const nodeW = Math.max(80, measureTextWidth(label))
+    const y = depth * (NODE_H + RETURN_TAG_H + LEVEL_GAP_Y)
+
+    positioned.push({ ...node, x: cx, y, w: nodeW, label })
+
+    const children = node.children ?? []
+    if (children.length === 0) return
+
+    const childWidths = children.map(c => subtreeWidth[c.id])
+    const totalChildSpan = childWidths.reduce((a, b) => a + b, 0) + SIBLING_GAP * (children.length - 1)
+
+    let startX = cx - totalChildSpan / 2
+    children.forEach((child, i) => {
+      const childCx = startX + childWidths[i] / 2
+      const childY = (depth + 1) * (NODE_H + RETURN_TAG_H + LEVEL_GAP_Y)
+      edges.push({ parentId: node.id, childId: child.id, x1: cx, y1: y + NODE_H, x2: childCx, y2: childY })
+      assign(child, childCx, depth + 1)
+      startX += childWidths[i] + SIBLING_GAP
+    })
+  }
+
+  assign(root, subtreeWidth[root.id] / 2, 0)
+
+  // 3. Compute bounding box
+  let minX = Infinity, maxX = -Infinity, maxY = 0
+  positioned.forEach(n => {
+    const halfW = n.w / 2
+    if (n.x - halfW < minX) minX = n.x - halfW
+    if (n.x + halfW > maxX) maxX = n.x + halfW
+    if (n.y + NODE_H + RETURN_TAG_H > maxY) maxY = n.y + NODE_H + RETURN_TAG_H
+  })
+
+  // Normalize so top-left is at (padding, padding)
+  const PAD = 40
+  positioned.forEach(n => { n.x -= minX - PAD; n.y += PAD })
+  edges.forEach(e => { e.x1 -= minX - PAD; e.x2 -= minX - PAD; e.y1 += PAD; e.y2 += PAD })
+
+  return {
+    positioned,
+    edges,
+    width: maxX - minX + PAD * 2,
+    height: maxY + PAD * 2,
+  }
+}
+
 export default function RecursionTree({ nodes, currentNodeId, executionPhase, isExpanded = false, onToggleExpand }) {
-  const viewportRef = useRef(null)
-  const contentRef = useRef(null)
+  const containerRef = useRef(null)
   const [fitScale, setFitScale] = useState(1)
 
   const { treeData, labelFrequencies, maxFreq } = useMemo(() => {
@@ -32,11 +115,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
     let max = 1
 
     nodes.forEach(node => {
-      nodeMap[node.id] = {
-        ...node,
-        children: [],
-      }
-      
+      nodeMap[node.id] = { ...node, children: [] }
       const label = getNodeLabel(node)
       freqs[label] = (freqs[label] || 0) + 1
       if (freqs[label] > max) max = freqs[label]
@@ -54,245 +133,57 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
     return { treeData: root, labelFrequencies: freqs, maxFreq: max }
   }, [nodes])
 
-  const layout = useMemo(() => {
-    if (!treeData) return null
-
-    const GAP = 16
-
-    const widthById = {}
-    const childSpanById = {}
-
-    const measure = (node) => {
-      if (!node) return 90
-      
-      const labelStr = getNodeLabel(node)
-      // Approximate width based on character count for font-mono text-lg + padding
-      const nodeNeededWidth = Math.max(90, labelStr.length * 11 + 40)
-
-      const children = node.children ?? []
-      if (children.length === 0) {
-        widthById[node.id] = nodeNeededWidth
-        childSpanById[node.id] = 0
-        return nodeNeededWidth
-      }
-
-      const childWidths = children.map(measure)
-      const span = childWidths.reduce((a, b) => a + b, 0) + GAP * Math.max(children.length - 1, 0)
-      const w = Math.max(nodeNeededWidth, span)
-      widthById[node.id] = w
-      childSpanById[node.id] = span
-      return w
-    }
-
-    const rootWidth = measure(treeData)
-    return { rootWidth, widthById, childSpanById, gap: GAP }
+  const { positioned, edges, width: treeW, height: treeH } = useMemo(() => {
+    return layoutTree(treeData)
   }, [treeData])
 
+  // Auto-fit scale when the tree changes
   useEffect(() => {
-    const viewportEl = viewportRef.current
-    const contentEl = contentRef.current
-    if (!viewportEl || !contentEl || !treeData) {
-      setFitScale(1)
-      return undefined
-    }
+    if (!containerRef.current || !treeData || treeW === 0) return
+    const el = containerRef.current
+    const availW = el.clientWidth - 16
+    const availH = el.clientHeight - 16
+    const scaleX = availW / treeW
+    const scaleY = availH / treeH
+    const autoScale = Math.min(1, scaleX, scaleY)
+    setFitScale(autoScale > 0.1 ? autoScale : 0.5)
+  }, [treeData, treeW, treeH, isExpanded])
 
-    const computeScale = () => {
-      const availableWidth = Math.max(viewportEl.clientWidth - 24, 1)
-      const availableHeight = Math.max(viewportEl.clientHeight - 24, 1)
-      const contentWidth = Math.max(contentEl.scrollWidth, 1)
-      const contentHeight = Math.max(contentEl.scrollHeight, 1)
-      const scaleX = availableWidth / contentWidth
-      const scaleY = availableHeight / contentHeight
-      const nextScale = Math.min(1, scaleX, scaleY)
-      setFitScale(nextScale > 0 ? nextScale : 1)
-    }
-
-    const rafId = requestAnimationFrame(computeScale)
-    const observer = new ResizeObserver(computeScale)
-    observer.observe(viewportEl)
-    observer.observe(contentEl)
-    window.addEventListener('resize', computeScale)
-
-    return () => {
-      cancelAnimationFrame(rafId)
-      observer.disconnect()
-      window.removeEventListener('resize', computeScale)
-    }
-  }, [treeData, layout?.rootWidth, nodes?.length])
-
-  const getNodeStyle = (node, depth = 0) => {
+  const getNodeFill = (node) => {
     const isActive = node.id === currentNodeId
     const label = getNodeLabel(node)
     const freq = labelFrequencies[label] || 1
 
-    let defaultBg, defaultText
+    // Heat-map palette
+    const heatColors = [
+      { fill: '#3b82f6', stroke: '#2563eb' },  // blue
+      { fill: '#6366f1', stroke: '#4f46e5' },  // indigo
+      { fill: '#8b5cf6', stroke: '#7c3aed' },  // violet
+      { fill: '#a855f7', stroke: '#9333ea' },  // purple
+      { fill: '#d946ef', stroke: '#c026d3' },  // fuchsia
+      { fill: '#f43f5e', stroke: '#e11d48' },  // rose
+      { fill: '#ef4444', stroke: '#dc2626' },  // red
+    ]
 
+    let fill, strokeColor
     if (freq <= 1) {
-      defaultBg = 'bg-blue-500 border-blue-600'
-      defaultText = 'text-white'
+      fill = heatColors[0].fill
+      strokeColor = heatColors[0].stroke
     } else {
       const effectiveMax = Math.max(maxFreq, 4)
       const ratio = Math.min((freq - 1) / (effectiveMax - 1), 1)
-      
-      const heatColors = [
-        { bg: 'bg-blue-500 border-blue-600', text: 'text-white' },
-        { bg: 'bg-indigo-500 border-indigo-600', text: 'text-white' },
-        { bg: 'bg-violet-500 border-violet-600', text: 'text-white' },
-        { bg: 'bg-purple-500 border-purple-600', text: 'text-white' },
-        { bg: 'bg-fuchsia-500 border-fuchsia-600', text: 'text-white' },
-        { bg: 'bg-rose-500 border-rose-600', text: 'text-white' },
-        { bg: 'bg-red-500 border-red-600', text: 'text-white' },
-      ]
-      
-      const index = Math.min(Math.round(ratio * (heatColors.length - 1)), heatColors.length - 1)
-      defaultBg = heatColors[index].bg
-      defaultText = heatColors[index].text
+      const idx = Math.min(Math.round(ratio * (heatColors.length - 1)), heatColors.length - 1)
+      fill = heatColors[idx].fill
+      strokeColor = heatColors[idx].stroke
     }
 
     if (isActive && executionPhase === 'calling') {
-      return {
-        container: `scale-[1.15] border-[3px] border-amber-400 ${defaultBg} shadow-lg shadow-amber-500/40 z-10`,
-        text: `${defaultText} text-lg`,
-      }
+      return { fill, strokeColor: '#fbbf24', strokeWidth: 4, shadow: 'drop-shadow(0 0 12px rgba(245,158,11,0.6))' }
     }
-
     if (isActive && executionPhase === 'returning') {
-      return {
-        container: `scale-[1.1] border-[3px] border-emerald-400 ${defaultBg} shadow-lg shadow-emerald-500/40 z-10`,
-        text: `${defaultText} text-lg`,
-      }
+      return { fill, strokeColor: '#34d399', strokeWidth: 4, shadow: 'drop-shadow(0 0 12px rgba(52,211,153,0.6))' }
     }
-
-    return {
-      container: `border-[2px] ${defaultBg} shadow-md`,
-      text: `${defaultText} text-lg`,
-    }
-  }
-
-  const renderNode = (node, depth = 0) => {
-    if (!node) return null
-
-    const nodeWidth = layout?.widthById?.[node.id] ?? 180
-    const childSpan = layout?.childSpanById?.[node.id] ?? 0
-
-    const style = getNodeStyle(node, depth)
-    const hasChildren = node.children && node.children.length > 0
-
-    return (
-      <motion.div
-        key={node.id}
-        className="flex flex-col items-center"
-        style={{ width: `${nodeWidth}px` }}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: depth * 0.08, duration: 0.4, ease: 'easeOut' }}
-      >
-        <motion.div
-          className={`relative rounded-full flex h-12 min-w-[3rem] items-center justify-center px-3 font-mono transition-colors shadow-lg ${style.container}`}
-          whileHover={{ scale: 1.02 }}
-          layout
-        >
-          <div className={`font-bold ${style.text}`}>
-            {getNodeLabel(node)}
-          </div>
-        </motion.div>
-
-        {node.returned && node.returnValue !== undefined && (
-          <motion.div
-            className={`text-[11px] font-bold mt-1 text-muted-foreground`}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            ret: {JSON.stringify(node.returnValue)}
-          </motion.div>
-        )}
-
-        {hasChildren && (
-          <>
-            <div className="w-full flex justify-center z-0 relative py-2">
-              <svg width={nodeWidth} height={40} className="overflow-visible">
-                <defs>
-                  <marker id={`arrow-${node.id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-                    <path d="M 0 0 L 10 5 L 0 10 z" className="fill-border opacity-70" />
-                  </marker>
-                  <marker id={`arrow-active-calling-${node.id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                    <path d="M 0 0 L 10 5 L 0 10 z" className="fill-amber-500" />
-                  </marker>
-                  <marker id={`arrow-active-returning-${node.id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                    <path d="M 0 0 L 10 5 L 0 10 z" className="fill-blue-500" />
-                  </marker>
-                </defs>
-
-                {node.children.map((c, i) => {
-                  let currentX = 0;
-                  for (let j = 0; j < i; j++) {
-                    currentX += (layout?.widthById?.[node.children[j].id] ?? 180) + (layout?.gap ?? 32);
-                  }
-                  const cWidth = layout?.widthById?.[c.id] ?? 180;
-                  const childCenterInGrid = currentX + cWidth / 2;
-                  const gridLeftOffset = (nodeWidth - childSpan) / 2;
-                  const targetX = gridLeftOffset + childCenterInGrid;
-
-                  const isChildActive = c.id === currentNodeId;
-                  const isCalling = isChildActive && executionPhase === 'calling';
-                  const isReturning = isChildActive && executionPhase === 'returning';
-                  
-                  const strokeClass = isCalling ? 'stroke-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]' 
-                                   : isReturning ? 'stroke-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' 
-                                   : 'stroke-border opacity-70';
-                  
-                  const strokeWidth = isChildActive ? 3 : 2;
-
-                  const parentX = nodeWidth / 2;
-                  
-                  const x1 = isReturning ? targetX : parentX;
-                  const y1 = isReturning ? 40 : 0;
-                  const x2 = isReturning ? parentX : targetX;
-                  const y2 = isReturning ? 0 : 40;
-                  
-                  const markerId = isCalling ? `url(#arrow-active-calling-${node.id})` 
-                                 : isReturning ? `url(#arrow-active-returning-${node.id})` 
-                                 : `url(#arrow-${node.id})`;
-
-                  return (
-                    <motion.line
-                      key={c.id}
-                      x1={x1} y1={y1}
-                      x2={x2} y2={y2}
-                      className={strokeClass}
-                      strokeWidth={strokeWidth}
-                      markerEnd={markerId}
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.4, delay: depth * 0.08 + 0.2 }}
-                    />
-                  )
-                })}
-              </svg>
-            </div>
-
-            <div className="mt-0 z-10 relative">
-              <AnimatePresence mode="popLayout">
-                <div
-                  className="grid items-start justify-center"
-                  style={{
-                    gridTemplateColumns: node.children.map((c) => `${layout?.widthById?.[c.id] ?? 180}px`).join(' '),
-                    columnGap: `${layout?.gap ?? 32}px`,
-                  }}
-                >
-                  {node.children.map((child) => (
-                    <div key={child.id} className="flex flex-col items-center">
-                      {renderNode(child, depth + 1)}
-                    </div>
-                  ))}
-                </div>
-              </AnimatePresence>
-            </div>
-          </>
-        )}
-      </motion.div>
-    )
+    return { fill, strokeColor, strokeWidth: 2.5, shadow: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }
   }
 
   return (
@@ -317,21 +208,134 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
         </div>
       </div>
 
-      <div ref={viewportRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent p-6">
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-auto bg-transparent relative"
+      >
         <AnimatePresence>
-          {treeData ? (
-            <div className="flex min-h-full items-start justify-center">
-              <div
-                ref={contentRef}
-                style={{
-                  width: layout?.rootWidth ? `${layout.rootWidth}px` : 'max-content',
-                  transform: `scale(${fitScale})`,
-                  transformOrigin: 'top center',
-                }}
-              >
-                {renderNode(treeData, 0)}
-              </div>
-            </div>
+          {treeData && positioned.length > 0 ? (
+            <svg
+              width="100%"
+              height="100%"
+              className="block"
+              style={{ overflow: 'visible' }}
+            >
+              <defs>
+                <filter id="node-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.25" />
+                </filter>
+                <filter id="node-glow-amber" x="-30%" y="-30%" width="160%" height="160%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#f59e0b" floodOpacity="0.5" />
+                </filter>
+                <filter id="node-glow-emerald" x="-30%" y="-30%" width="160%" height="160%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#34d399" floodOpacity="0.5" />
+                </filter>
+                <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
+                </marker>
+                <marker id="arrowhead-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b" />
+                </marker>
+                <marker id="arrowhead-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#34d399" />
+                </marker>
+              </defs>
+
+              <g transform={`scale(${fitScale})`} style={{ transformOrigin: 'top left' }}>
+                {/* Edges */}
+                {edges.map((e, i) => {
+                  const childActive = e.childId === currentNodeId
+                  const isCalling = childActive && executionPhase === 'calling'
+                  const isReturning = childActive && executionPhase === 'returning'
+
+                  const midY = (e.y1 + e.y2) / 2
+                  const path = `M ${e.x1} ${e.y1} C ${e.x1} ${midY}, ${e.x2} ${midY}, ${e.x2} ${e.y2}`
+
+                  return (
+                    <path
+                      key={`edge-${i}`}
+                      d={path}
+                      fill="none"
+                      stroke={isCalling ? '#f59e0b' : isReturning ? '#34d399' : '#94a3b8'}
+                      strokeWidth={childActive ? 3 : 1.8}
+                      strokeOpacity={childActive ? 1 : 0.6}
+                      markerEnd={isCalling ? 'url(#arrowhead-amber)' : isReturning ? 'url(#arrowhead-emerald)' : 'url(#arrowhead)'}
+                      style={{
+                        filter: childActive ? `drop-shadow(0 0 6px ${isCalling ? 'rgba(245,158,11,0.4)' : 'rgba(52,211,153,0.4)'})` : 'none',
+                        transition: 'stroke 0.3s, stroke-width 0.3s',
+                      }}
+                    />
+                  )
+                })}
+
+                {/* Nodes */}
+                {positioned.map((node) => {
+                  const style = getNodeFill(node)
+                  const isActive = node.id === currentNodeId
+                  const filterAttr = isActive
+                    ? (executionPhase === 'calling' ? 'url(#node-glow-amber)' : 'url(#node-glow-emerald)')
+                    : 'url(#node-shadow)'
+
+                  return (
+                    <g key={`node-${node.id}`}>
+                      {/* Node pill */}
+                      <rect
+                        x={node.x - node.w / 2}
+                        y={node.y}
+                        width={node.w}
+                        height={NODE_H}
+                        rx={NODE_H / 2}
+                        ry={NODE_H / 2}
+                        fill={style.fill}
+                        stroke={style.strokeColor}
+                        strokeWidth={style.strokeWidth}
+                        filter={filterAttr}
+                        style={{ transition: 'fill 0.3s, stroke 0.3s' }}
+                      />
+                      {/* Node label */}
+                      <text
+                        x={node.x}
+                        y={node.y + NODE_H / 2 + 1}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill="white"
+                        fontFamily="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
+                        fontSize="13"
+                        fontWeight="700"
+                      >
+                        {node.label}
+                      </text>
+
+                      {/* Return value tag */}
+                      {node.returned && node.returnValue !== undefined && (
+                        <g>
+                          <rect
+                            x={node.x - 26}
+                            y={node.y + NODE_H + 4}
+                            width={52}
+                            height={RETURN_TAG_H}
+                            rx={RETURN_TAG_H / 2}
+                            fill="rgba(0,0,0,0.15)"
+                          />
+                          <text
+                            x={node.x}
+                            y={node.y + NODE_H + 4 + RETURN_TAG_H / 2 + 1}
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                            fill="#94a3b8"
+                            fontFamily="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
+                            fontSize="10"
+                            fontWeight="600"
+                          >
+                            → {typeof node.returnValue === 'object' ? JSON.stringify(node.returnValue) : String(node.returnValue)}
+                          </text>
+                        </g>
+                      )}
+                    </g>
+                  )
+                })}
+              </g>
+            </svg>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
               <GitBranch className="h-10 w-10 text-border" />
@@ -339,6 +343,8 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
             </div>
           )}
         </AnimatePresence>
+
+
       </div>
     </Card>
   )
