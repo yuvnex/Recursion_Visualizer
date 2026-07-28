@@ -8,7 +8,6 @@ import RecursionTree from '@/components/recursion/RecursionTree'
 import CallStack from '@/components/recursion/CallStack'
 import ControlPanel from '@/components/recursion/ControlPanel'
 import ExampleSelector, { EXAMPLES } from '@/components/recursion/ExampleSelector'
-import ExecutionLog from '@/components/recursion/ExecutionLog'
 import ModeToggle from '@/components/recursion/ModeToggle'
 import CustomCodePanel from '@/components/recursion/CustomCodePanel'
 
@@ -153,7 +152,6 @@ export default function RecursionVisualizer() {
   const [code, setCode] = useState(EXAMPLES[0].code)
   const [nodes, setNodes] = useState([])
   const [stack, setStack] = useState([])
-  const [logs, setLogs] = useState([])
   const [currentNodeId, setCurrentNodeId] = useState(null)
   const [executionPhase, setExecutionPhase] = useState(null)
   const [currentLine, setCurrentLine] = useState(null)
@@ -186,7 +184,7 @@ export default function RecursionVisualizer() {
 
   const handleReset = useCallback(() => {
     clearTimeout(animationRef.current)
-    setNodes([]); setStack([]); setLogs([])
+    setNodes([]); setStack([])
     setCurrentNodeId(null); setExecutionPhase(null); setCurrentLine(null)
     setIsRunning(false); setIsPaused(false); setIsComplete(false)
     setCurrentStep(0); setTotalSteps(0)
@@ -210,7 +208,6 @@ export default function RecursionVisualizer() {
       setCurrentNodeId(step.nodeId)
       setNodes(prev => [...prev, { id: step.nodeId, parentId: step.parentId, label: step.label, params: step.params, isBaseCase: step.isBaseCase, returned: false }])
       setStack(prev => [...prev, { id: step.nodeId, label: step.label, params: step.params }])
-      setLogs(prev => [...prev, { type: step.isBaseCase ? 'base' : 'call', message: `→ ${step.label}${step.isBaseCase ? '  [base]' : ''}` }])
       // Point to the base-case condition line, or the recursive call line
       if (step.isBaseCase) {
         setCurrentLine(findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (arr.length <= 1)']))
@@ -222,7 +219,6 @@ export default function RecursionVisualizer() {
       setCurrentNodeId(step.nodeId)
       setNodes(prev => prev.map(n => n.id === step.nodeId ? { ...n, returned: true, returnValue: step.value } : n))
       setStack(prev => prev.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId))
-      setLogs(prev => [...prev, { type: 'return', message: `← ${step.label ?? `node ${step.nodeId}`}  =  ${step.value}` }])
       // Point to the actual return statement
       if (step.isBaseCase) {
         setCurrentLine(findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;']))
@@ -362,13 +358,30 @@ export default function RecursionVisualizer() {
           </motion.div>
         )}
 
-        {/* ── Recursion Tree: FULL WIDTH, top section ── */}
+        {/* ── Code Editor and Call Stack: 2-column row ── */}
+        {showVisualizer && (
+          <motion.div
+            className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6 mb-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
+          >
+            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
+              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
+            </div>
+            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
+              <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Recursion Tree: FULL WIDTH, bottom section ── */}
         {showVisualizer && (
           <motion.div
             className="mb-5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.3 }}
           >
             <div className="min-h-[480px] h-[min(60vh,640px)]">
               <RecursionTree
@@ -378,26 +391,6 @@ export default function RecursionVisualizer() {
                 isExpanded={false}
                 onToggleExpand={toggleTreeExpand}
               />
-            </div>
-          </motion.div>
-        )}
-
-        {/* ── Code Editor, Call Stack, Execution Log: 3-column row below ── */}
-        {showVisualizer && (
-          <motion.div
-            className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
-              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
-            </div>
-            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
-              <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
-            </div>
-            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
-              <ExecutionLog logs={logs} />
             </div>
           </motion.div>
         )}
