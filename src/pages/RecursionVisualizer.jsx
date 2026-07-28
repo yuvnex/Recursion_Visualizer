@@ -358,10 +358,10 @@ export default function RecursionVisualizer() {
           </motion.div>
         )}
 
-        {/* ── Code Editor and Call Stack: 2-column row ── */}
+        {/* ── Visualizer Layout: 3-column row ── */}
         {showVisualizer && (
           <motion.div
-            className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6 mb-5"
+            className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6 mb-5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.25 }}
@@ -370,20 +370,6 @@ export default function RecursionVisualizer() {
               <CodeEditor code={code} onChange={setCode} currentLine={currentLine} isRunning={isRunning} />
             </div>
             <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
-              <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
-            </div>
-          </motion.div>
-        )}
-
-        {/* ── Recursion Tree: FULL WIDTH, bottom section ── */}
-        {showVisualizer && (
-          <motion.div
-            className="mb-5"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="min-h-[480px] h-[min(60vh,640px)]">
               <RecursionTree
                 nodes={nodes}
                 currentNodeId={currentNodeId}
@@ -391,6 +377,9 @@ export default function RecursionVisualizer() {
                 isExpanded={false}
                 onToggleExpand={toggleTreeExpand}
               />
+            </div>
+            <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
+              <CallStack stack={stack} currentNodeId={currentNodeId} executionPhase={executionPhase} />
             </div>
           </motion.div>
         )}
