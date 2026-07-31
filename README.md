@@ -114,10 +114,6 @@ factorial(5);
 - Displays parameters for each call
 - Shows return values when available
 
-**Execution Log:**
-- Records every step in the execution
-- Shows calls, returns, and base cases
-- Useful for understanding execution order
 
 **Code Editor:**
 - 🟢 Green lines: Base case conditions
