@@ -314,9 +314,10 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                         textAnchor="middle"
                         dominantBaseline="central"
                         fill="white"
-                        fontFamily="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
+                        fontFamily="'Inter', system-ui, sans-serif"
                         fontSize="13"
-                        fontWeight="700"
+                        fontWeight="600"
+                        letterSpacing="0.3px"
                       >
                         {node.label}
                       </text>
@@ -338,9 +339,10 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                             textAnchor="middle"
                             dominantBaseline="central"
                             fill="#94a3b8"
-                            fontFamily="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
-                            fontSize="10"
-                            fontWeight="600"
+                            fontFamily="'Inter', system-ui, sans-serif"
+                            fontSize="11"
+                            fontWeight="500"
+                            letterSpacing="0.2px"
                           >
                             → {typeof node.returnValue === 'object' ? JSON.stringify(node.returnValue) : String(node.returnValue)}
                           </text>
