@@ -105,7 +105,7 @@ function layoutTree(root) {
 
 export default function RecursionTree({ nodes, currentNodeId, executionPhase, isExpanded = false, onToggleExpand }) {
   const containerRef = useRef(null)
-  const [fitScale, setFitScale] = useState(1)
+  const [dimensions, setDimensions] = useState({ scale: 1, translateX: 0, translateY: 0 })
 
   const { treeData, labelFrequencies, maxFreq } = useMemo(() => {
     if (!nodes || nodes.length === 0) return { treeData: null, labelFrequencies: {}, maxFreq: 1 }
@@ -137,16 +137,29 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
     return layoutTree(treeData)
   }, [treeData])
 
-  // Auto-fit scale when the tree changes
+  // Auto-fit scale and centering when the tree changes
   useEffect(() => {
     if (!containerRef.current || !treeData || treeW === 0) return
-    const el = containerRef.current
-    const availW = el.clientWidth - 16
-    const availH = el.clientHeight - 16
-    const scaleX = availW / treeW
-    const scaleY = availH / treeH
-    const autoScale = Math.min(1, scaleX, scaleY)
-    setFitScale(autoScale > 0.1 ? autoScale : 0.5)
+    
+    const updateDimensions = () => {
+      const el = containerRef.current
+      const availW = el.clientWidth
+      const availH = el.clientHeight
+      const padding = 16
+      const scaleX = (availW - padding) / (treeW || 1)
+      const scaleY = (availH - padding) / (treeH || 1)
+      const autoScale = Math.min(1, scaleX, scaleY)
+      const scale = autoScale > 0.1 ? autoScale : 0.5
+      
+      const scaledWidth = treeW * scale
+      const translateX = Math.max((availW - scaledWidth) / 2, padding / 2)
+      
+      setDimensions({ scale, translateX, translateY: padding / 2 })
+    }
+
+    updateDimensions()
+    window.addEventListener('resize', updateDimensions)
+    return () => window.removeEventListener('resize', updateDimensions)
   }, [treeData, treeW, treeH, isExpanded])
 
   const getNodeFill = (node) => {
@@ -241,7 +254,7 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                 </marker>
               </defs>
 
-              <g transform={`scale(${fitScale})`} style={{ transformOrigin: 'top left' }}>
+              <g transform={`translate(${dimensions.translateX}, ${dimensions.translateY}) scale(${dimensions.scale})`} style={{ transformOrigin: 'top left' }}>
                 {/* Edges */}
                 {edges.map((e, i) => {
                   const childActive = e.childId === currentNodeId
@@ -249,7 +262,9 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                   const isReturning = childActive && executionPhase === 'returning'
 
                   const midY = (e.y1 + e.y2) / 2
-                  const path = `M ${e.x1} ${e.y1} C ${e.x1} ${midY}, ${e.x2} ${midY}, ${e.x2} ${e.y2}`
+                  const path = isReturning
+                    ? `M ${e.x2} ${e.y2} C ${e.x2} ${midY}, ${e.x1} ${midY}, ${e.x1} ${e.y1}`
+                    : `M ${e.x1} ${e.y1} C ${e.x1} ${midY}, ${e.x2} ${midY}, ${e.x2} ${e.y2}`
 
                   return (
                     <path
