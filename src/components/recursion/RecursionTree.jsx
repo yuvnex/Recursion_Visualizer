@@ -267,9 +267,11 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                     : `M ${e.x1} ${e.y1} C ${e.x1} ${midY}, ${e.x2} ${midY}, ${e.x2} ${e.y2}`
 
                   return (
-                    <path
-                      key={`edge-${i}`}
-                      d={path}
+                    <motion.path
+                      key={`edge-${e.childId}`}
+                      initial={{ d: path, opacity: 0, pathLength: 0 }}
+                      animate={{ d: path, opacity: 1, pathLength: 1 }}
+                      transition={{ duration: 0.5, type: 'spring', bounce: 0 }}
                       fill="none"
                       stroke={isCalling ? '#f59e0b' : isReturning ? '#34d399' : '#94a3b8'}
                       strokeWidth={childActive ? 3 : 1.8}
@@ -292,12 +294,19 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                     : 'url(#node-shadow)'
 
                   return (
-                    <g key={`node-${node.id}`}>
+                    <motion.g 
+                      key={`node-${node.id}`}
+                      initial={{ opacity: 0, scale: 0.8, x: node.x, y: node.y - 20 }}
+                      animate={{ opacity: 1, scale: 1, x: node.x, y: node.y }}
+                      transition={{ duration: 0.5, type: 'spring', bounce: 0.1 }}
+                    >
                       {/* Node pill */}
-                      <rect
-                        x={node.x - node.w / 2}
-                        y={node.y}
-                        width={node.w}
+                      <motion.rect
+                        initial={{ width: node.w }}
+                        animate={{ width: node.w }}
+                        transition={{ duration: 0.5, type: 'spring', bounce: 0.1 }}
+                        x={-node.w / 2}
+                        y={0}
                         height={NODE_H}
                         rx={NODE_H / 2}
                         ry={NODE_H / 2}
@@ -309,8 +318,8 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                       />
                       {/* Node label */}
                       <text
-                        x={node.x}
-                        y={node.y + NODE_H / 2 + 1}
+                        x={0}
+                        y={NODE_H / 2 + 1}
                         textAnchor="middle"
                         dominantBaseline="central"
                         fill="white"
@@ -324,18 +333,22 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
                       {/* Return value tag */}
                       {node.returned && node.returnValue !== undefined && (
-                        <g>
+                        <motion.g
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
                           <rect
-                            x={node.x - 26}
-                            y={node.y + NODE_H + 4}
+                            x={-26}
+                            y={NODE_H + 4}
                             width={52}
                             height={RETURN_TAG_H}
                             rx={RETURN_TAG_H / 2}
                             fill="rgba(0,0,0,0.15)"
                           />
                           <text
-                            x={node.x}
-                            y={node.y + NODE_H + 4 + RETURN_TAG_H / 2 + 1}
+                            x={0}
+                            y={NODE_H + 4 + RETURN_TAG_H / 2 + 1}
                             textAnchor="middle"
                             dominantBaseline="central"
                             fill="#94a3b8"
@@ -346,9 +359,9 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                           >
                             → {typeof node.returnValue === 'object' ? JSON.stringify(node.returnValue) : String(node.returnValue)}
                           </text>
-                        </g>
+                        </motion.g>
                       )}
-                    </g>
+                    </motion.g>
                   )
                 })}
               </g>
