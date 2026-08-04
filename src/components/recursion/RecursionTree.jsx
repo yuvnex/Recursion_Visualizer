@@ -332,35 +332,44 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
                       </text>
 
                       {/* Return value tag */}
-                      {node.returned && node.returnValue !== undefined && (
-                        <motion.g
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <rect
-                            x={-26}
-                            y={NODE_H + 4}
-                            width={52}
-                            height={RETURN_TAG_H}
-                            rx={RETURN_TAG_H / 2}
-                            fill="rgba(0,0,0,0.15)"
-                          />
-                          <text
-                            x={0}
-                            y={NODE_H + 4 + RETURN_TAG_H / 2 + 1}
-                            textAnchor="middle"
-                            dominantBaseline="central"
-                            fill="#94a3b8"
-                            fontFamily="'Inter', system-ui, sans-serif"
-                            fontSize="11"
-                            fontWeight="500"
-                            letterSpacing="0.2px"
+                      {node.returned && node.returnValue !== undefined && (() => {
+                        const returnStr = typeof node.returnValue === 'object' ? JSON.stringify(node.returnValue) : String(node.returnValue);
+                        const displayStr = `→ ${returnStr}`;
+                        const tagW = Math.max(60, displayStr.length * 7.5 + 24);
+                        const tagH = 22;
+                        return (
+                          <motion.g
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
                           >
-                            → {typeof node.returnValue === 'object' ? JSON.stringify(node.returnValue) : String(node.returnValue)}
-                          </text>
-                        </motion.g>
-                      )}
+                            <rect
+                              x={-tagW / 2}
+                              y={NODE_H + 4}
+                              width={tagW}
+                              height={tagH}
+                              rx={tagH / 2}
+                              fill="#f1f5f9"
+                              stroke="#cbd5e1"
+                              strokeWidth="1.5"
+                              style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }}
+                            />
+                            <text
+                              x={0}
+                              y={NODE_H + 4 + tagH / 2 + 1}
+                              textAnchor="middle"
+                              dominantBaseline="central"
+                              fill="#0f172a"
+                              fontFamily="'Inter', system-ui, sans-serif"
+                              fontSize="12"
+                              fontWeight="600"
+                              letterSpacing="0.2px"
+                            >
+                              {displayStr}
+                            </text>
+                          </motion.g>
+                        );
+                      })()}
                     </motion.g>
                   )
                 })}
