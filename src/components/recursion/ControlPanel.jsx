@@ -2,12 +2,12 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Card } from '@/components/ui/card'
-import { Play, Pause, SkipForward, RotateCcw, Gauge, Check } from 'lucide-react'
+import { Play, Pause, SkipForward, SkipBack, RotateCcw, Gauge, Check } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function ControlPanel({
   isRunning, isPaused, speed,
-  onStart, onPause, onResume, onStep, onReset, onSpeedChange,
+  onStart, onPause, onResume, onStep, onPrev, onReset, onSpeedChange,
   currentStep, totalSteps, isComplete, complexity
 }) {
   return (
@@ -37,6 +37,18 @@ export default function ControlPanel({
               </Button>
             </motion.div>
           )}
+
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <Button
+              onClick={onPrev}
+              disabled={currentStep === 0 || (isRunning && !isPaused)}
+              variant="outline"
+              className="app-btn-secondary"
+            >
+              <SkipBack className="mr-2 h-4 w-4" />
+              Prev
+            </Button>
+          </motion.div>
 
           <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
             <Button

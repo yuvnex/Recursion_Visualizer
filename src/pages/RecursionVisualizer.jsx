@@ -268,6 +268,61 @@ export default function RecursionVisualizer() {
     animationRef.current = setTimeout(runAnimation, 0)
   }, [isRunning, isComplete, runAnimation])
 
+  const jumpToStep = useCallback((targetStep) => {
+    if (targetStep < 0) targetStep = 0
+    const steps = stepsRef.current
+    if (targetStep > steps.length) targetStep = steps.length
+
+    let nextNodes = []
+    let nextStack = []
+    let phase = null
+    let currNodeId = null
+    let currLine = null
+
+    for (let i = 0; i < targetStep; i++) {
+      const step = steps[i]
+      if (step.type === 'call') {
+        phase = 'calling'
+        currNodeId = step.nodeId
+        nextNodes.push({ id: step.nodeId, parentId: step.parentId, label: step.label, params: step.params, isBaseCase: step.isBaseCase, returned: false })
+        nextStack.push({ id: step.nodeId, label: step.label, params: step.params })
+        if (step.isBaseCase) {
+          currLine = findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (arr.length <= 1)'])
+        } else {
+          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'let left = mergeSort', 'left = mergeSort'])
+        }
+      } else {
+        phase = 'returning'
+        currNodeId = step.nodeId
+        nextNodes = nextNodes.map(n => n.id === step.nodeId ? { ...n, returned: true, returnValue: step.value } : n)
+        nextStack = nextStack.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId)
+        if (step.isBaseCase) {
+          currLine = findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;'])
+        } else {
+          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge('])
+        }
+      }
+    }
+
+    setNodes(nextNodes)
+    setStack(nextStack)
+    setExecutionPhase(phase)
+    setCurrentNodeId(currNodeId)
+    setCurrentLine(currLine)
+    
+    stepIndexRef.current = targetStep
+    setCurrentStep(targetStep)
+
+    if (targetStep >= steps.length) {
+      setIsComplete(true)
+      setIsRunning(false)
+      setExecutionPhase(null)
+      setCurrentNodeId(null)
+    } else {
+      setIsComplete(false)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleStep = useCallback(() => {
     if (!isRunning) {
       const steps = getSteps()
@@ -281,6 +336,15 @@ export default function RecursionVisualizer() {
     stepIndexRef.current++
     setCurrentStep(stepIndexRef.current)
   }, [isRunning, getSteps, executeStep])
+
+  const handlePrev = useCallback(() => {
+    if (!isRunning && currentStep === 0) return
+    setIsPaused(true)
+    isPausedRef.current = true
+    clearTimeout(animationRef.current)
+    const nextTarget = Math.max(0, stepIndexRef.current - 1)
+    jumpToStep(nextTarget)
+  }, [isRunning, currentStep, jumpToStep])
 
   const analyzeCustomCode = useCallback(async ({ language, code }) => {
     setIsAnalyzing(true)
@@ -351,7 +415,7 @@ export default function RecursionVisualizer() {
             <ControlPanel
               isRunning={isRunning} isPaused={isPaused} speed={speed}
               onStart={handleStart} onPause={handlePause} onResume={handleResume}
-              onStep={handleStep} onReset={handleReset} onSpeedChange={setSpeed}
+              onStep={handleStep} onPrev={handlePrev} onReset={handleReset} onSpeedChange={setSpeed}
               currentStep={currentStep} totalSteps={totalSteps} isComplete={isComplete}
               complexity={COMPLEXITY[selectedExample?.id]}
             />
