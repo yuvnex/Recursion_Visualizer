@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitBranch, Maximize2, Minimize2 } from 'lucide-react'
+import { GitBranch, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Gauge } from 'lucide-react'
 
 const getNodeLabel = (node) => {
   if (!node.params) return node.label
@@ -103,7 +103,10 @@ function layoutTree(root) {
   }
 }
 
-export default function RecursionTree({ nodes, currentNodeId, executionPhase, isExpanded = false, onToggleExpand }) {
+export default function RecursionTree({ 
+  nodes, currentNodeId, executionPhase, isExpanded = false, onToggleExpand,
+  isRunning, isPaused, speed, onStart, onPause, onResume, onStep, onPrev, onSpeedChange, isComplete
+}) {
   const containerRef = useRef(null)
   const [dimensions, setDimensions] = useState({ scale: 1, translateX: 0, translateY: 0 })
 
@@ -201,9 +204,67 @@ export default function RecursionTree({ nodes, currentNodeId, executionPhase, is
 
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
-      <div className="bg-[#059669] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
-        <span>Recursion Tree</span>
-        <div className="absolute right-4 flex items-center gap-3">
+      <div className="bg-[#059669] text-white py-2 px-2 sm:px-4 z-10 shadow-sm flex items-center justify-between gap-2 overflow-hidden">
+        {onStart ? (
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {!isRunning || isPaused ? (
+              <button
+                onClick={isRunning ? onResume : onStart}
+                disabled={isComplete}
+                className="bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-md p-1.5 transition-colors flex items-center justify-center"
+                title={isRunning ? 'Resume' : 'Run'}
+              >
+                <Play className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                onClick={onPause}
+                className="bg-white/10 hover:bg-white/20 rounded-md p-1.5 transition-colors flex items-center justify-center"
+                title="Pause"
+              >
+                <Pause className="h-4 w-4" />
+              </button>
+            )}
+            
+            <button
+              onClick={onPrev}
+              disabled={(!isRunning && (nodes?.length || 0) === 0) || (isRunning && !isPaused)}
+              className="bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-md p-1.5 transition-colors flex items-center justify-center"
+              title="Previous Step"
+            >
+              <SkipBack className="h-4 w-4" />
+            </button>
+
+            <button
+              onClick={onStep}
+              disabled={isComplete || (isRunning && !isPaused)}
+              className="bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-md p-1.5 transition-colors flex items-center justify-center"
+              title="Next Step"
+            >
+              <SkipForward className="h-4 w-4" />
+            </button>
+
+            <div className="hidden sm:flex items-center gap-1.5 ml-1 bg-white/10 px-2 py-1 rounded-md">
+              <Gauge className="h-3.5 w-3.5 opacity-80" />
+              <input
+                type="range"
+                min={0.25} max={2} step={0.25}
+                value={speed || 1}
+                onChange={(e) => onSpeedChange && onSpeedChange(parseFloat(e.target.value))}
+                className="w-12 sm:w-16 accent-white h-1 cursor-pointer"
+              />
+              <span className="text-xs font-mono font-medium min-w-[24px] opacity-90">{speed}x</span>
+            </div>
+          </div>
+        ) : (
+          <div className="w-8 shrink-0" />
+        )}
+        
+        <span className="text-[16px] sm:text-[22px] tracking-wide font-sans text-center truncate min-w-0 flex-1">
+          Recursion Tree
+        </span>
+        
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 justify-end">
           {treeData && (
             <span className="rounded-full bg-white/20 px-2.5 py-0.5 font-mono text-xs font-medium">
               {nodes?.length} calls

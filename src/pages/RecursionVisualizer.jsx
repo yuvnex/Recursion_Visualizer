@@ -440,6 +440,16 @@ export default function RecursionVisualizer() {
                 executionPhase={executionPhase}
                 isExpanded={false}
                 onToggleExpand={toggleTreeExpand}
+                isRunning={isRunning}
+                isPaused={isPaused}
+                speed={speed}
+                onStart={handleStart}
+                onPause={handlePause}
+                onResume={handleResume}
+                onStep={handleStep}
+                onPrev={handlePrev}
+                onSpeedChange={setSpeed}
+                isComplete={isComplete}
               />
             </div>
             <div className="min-h-[380px] h-[min(48vh,500px)] lg:h-[500px]">
@@ -457,6 +467,16 @@ export default function RecursionVisualizer() {
                 executionPhase={executionPhase}
                 isExpanded={true}
                 onToggleExpand={toggleTreeExpand}
+                isRunning={isRunning}
+                isPaused={isPaused}
+                speed={speed}
+                onStart={handleStart}
+                onPause={handlePause}
+                onResume={handleResume}
+                onStep={handleStep}
+                onPrev={handlePrev}
+                onSpeedChange={setSpeed}
+                isComplete={isComplete}
               />
             </div>
           </div>
