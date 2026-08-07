@@ -205,7 +205,7 @@ export default function RecursionTree({
   return (
     <Card className="app-panel flex h-full flex-col overflow-hidden">
       <div className="bg-[#059669] text-white py-2 px-2 sm:px-4 z-10 shadow-sm flex items-center justify-between gap-2 overflow-hidden">
-        {onStart ? (
+        {onStart && isExpanded ? (
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {!isRunning || isPaused ? (
               <button
