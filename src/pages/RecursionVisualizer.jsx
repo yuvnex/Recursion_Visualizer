@@ -210,9 +210,9 @@ export default function RecursionVisualizer() {
       setStack(prev => [...prev, { id: step.nodeId, label: step.label, params: step.params }])
       // Point to the base-case condition line, or the recursive call line
       if (step.isBaseCase) {
-        setCurrentLine(findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (arr.length <= 1)']))
+        setCurrentLine(findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)']))
       } else {
-        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'let left = mergeSort', 'left = mergeSort']))
+        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort']))
       }
     } else {
       setExecutionPhase('returning')
@@ -287,9 +287,9 @@ export default function RecursionVisualizer() {
         nextNodes.push({ id: step.nodeId, parentId: step.parentId, label: step.label, params: step.params, isBaseCase: step.isBaseCase, returned: false })
         nextStack.push({ id: step.nodeId, label: step.label, params: step.params })
         if (step.isBaseCase) {
-          currLine = findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (arr.length <= 1)'])
+          currLine = findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)'])
         } else {
-          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'let left = mergeSort', 'left = mergeSort'])
+          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort'])
         }
       } else {
         phase = 'returning'

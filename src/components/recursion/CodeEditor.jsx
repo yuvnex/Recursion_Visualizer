@@ -15,15 +15,15 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
   }
 
   const isBaseCaseLine = (line) => {
-    const patterns = ['return 1', 'return 0', 'return n', 'if (n <= 1)', 'if (n == 0)', 'if (low > high)', 'if (n < 2)']
+    const patterns = ['return 1', 'return 0', 'return -1', 'return arr', 'return n', 'if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (low > high)', 'if (n < 2)', 'if (exp == 0)', 'if (index >=', 'if (arr.length <= 1)']
     return patterns.some(p => line.toLowerCase().includes(p.toLowerCase()))
   }
 
   const isRecursiveCallLine = (line) => {
-    const funcNames = ['factorial', 'fibonacci', 'fib', 'binarySearch', 'search', 'sumArray', 'sum', 'power']
+    const funcNames = ['factorial', 'fibonacci', 'fib', 'binarySearch', 'search', 'sumArray', 'sum', 'power', 'mergeSort']
     return funcNames.some(name => {
       const regex = new RegExp(`${name}\\s*\\(`)
-      return regex.test(line) && !line.includes('function') && !line.includes('int ') && !line.includes('def ')
+      return regex.test(line) && !line.includes('function') && !line.includes('public') && !line.includes('def ')
     })
   }
 

@@ -18,12 +18,12 @@ export const EXAMPLES = [
     difficulty: 'Beginner',
     description: 'Calculate n! = n × (n-1) × ... × 1',
     input: 5,
-    code: `function factorial(n) {
+    code: `public static int factorial(int n) {
   // Base case: factorial of 0 or 1 is 1
   if (n <= 1) {
     return 1;
   }
-  // Recursive case: n! = n × (n-1)!
+  // Recursive case: n! = n * (n-1)!
   return n * factorial(n - 1);
 }`,
   },
@@ -33,12 +33,12 @@ export const EXAMPLES = [
     difficulty: 'Beginner',
     description: 'Find the nth Fibonacci number',
     input: 5,
-    code: `function fibonacci(n) {
+    code: `public static int fibonacci(int n) {
   // Base cases: F(0) = 0, F(1) = 1
   if (n <= 0) {
     return 0;
   }
-  if (n === 1) {
+  if (n == 1) {
     return 1;
   }
   // Recursive case: F(n) = F(n-1) + F(n-2)
@@ -51,14 +51,14 @@ export const EXAMPLES = [
     difficulty: 'Intermediate',
     description: 'Find target in sorted array',
     input: { arr: [1, 3, 5, 7, 9, 11], target: 7, low: 0, high: 5 },
-    code: `function binarySearch(arr, target, low, high) {
+    code: `public static int binarySearch(int[] arr, int target, int low, int high) {
   // Base case: element not found
   if (low > high) {
     return -1;
   }
-  let mid = Math.floor((low + high) / 2);
+  int mid = (low + high) / 2;
   // Base case: element found
-  if (arr[mid] === target) {
+  if (arr[mid] == target) {
     return mid;
   }
   // Recursive cases
@@ -75,7 +75,7 @@ export const EXAMPLES = [
     difficulty: 'Beginner',
     description: 'Calculate sum of array elements recursively',
     input: { arr: [1, 2, 3, 4, 5], index: 0 },
-    code: `function sumArray(arr, index) {
+    code: `public static int sumArray(int[] arr, int index) {
   // Base case: reached end of array
   if (index >= arr.length) {
     return 0;
@@ -90,12 +90,12 @@ export const EXAMPLES = [
     difficulty: 'Beginner',
     description: 'Calculate base^exponent recursively',
     input: { base: 2, exp: 4 },
-    code: `function power(base, exp) {
+    code: `public static int power(int base, int exp) {
   // Base case: anything to power 0 is 1
-  if (exp === 0) {
+  if (exp == 0) {
     return 1;
   }
-  // Recursive case: base^exp = base × base^(exp-1)
+  // Recursive case: base^exp = base * base^(exp-1)
   return base * power(base, exp - 1);
 }`,
   },
@@ -105,30 +105,32 @@ export const EXAMPLES = [
     difficulty: 'Advanced',
     description: 'Sort an array using divide-and-conquer recursion',
     input: { arr: [4, 1, 3, 9, 7] },
-    code: `function mergeSort(arr) {
+    code: `public static int[] mergeSort(int[] arr) {
   // Base case: arrays of length 0 or 1 are already sorted
   if (arr.length <= 1) {
     return arr;
   }
   // Divide: split array in half
-  let mid = Math.floor(arr.length / 2);
-  let left = mergeSort(arr.slice(0, mid));
-  let right = mergeSort(arr.slice(mid));
+  int mid = arr.length / 2;
+  int[] left = mergeSort(Arrays.copyOfRange(arr, 0, mid));
+  int[] right = mergeSort(Arrays.copyOfRange(arr, mid, arr.length));
   // Conquer: merge sorted halves
   return merge(left, right);
 }
 
-function merge(left, right) {
-  let result = [];
-  let i = 0, j = 0;
+public static int[] merge(int[] left, int[] right) {
+  int[] result = new int[left.length + right.length];
+  int i = 0, j = 0, k = 0;
   while (i < left.length && j < right.length) {
     if (left[i] <= right[j]) {
-      result.push(left[i++]);
+      result[k++] = left[i++];
     } else {
-      result.push(right[j++]);
+      result[k++] = right[j++];
     }
   }
-  return result.concat(left.slice(i)).concat(right.slice(j));
+  while (i < left.length) result[k++] = left[i++];
+  while (j < right.length) result[k++] = right[j++];
+  return result;
 }`,
   },
 ]
