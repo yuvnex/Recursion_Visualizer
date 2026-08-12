@@ -133,6 +133,41 @@ public static int[] merge(int[] left, int[] right) {
   return result;
 }`,
   },
+  {
+    id: 'quickSort',
+    name: 'Quick Sort',
+    difficulty: 'Advanced',
+    description: 'Sort an array using divide-and-conquer with a pivot',
+    input: { arr: [4, 1, 3, 9, 7], low: 0, high: 4 },
+    code: `public static void quickSort(int[] arr, int low, int high) {
+  // Base case: if low index is greater than or equal to high, it's already sorted
+  if (low >= high) {
+    return;
+  }
+  // Partition the array and get the pivot index
+  int pivotIndex = partition(arr, low, high);
+  // Recursively sort the sub-arrays
+  quickSort(arr, low, pivotIndex - 1);
+  quickSort(arr, pivotIndex + 1, high);
+}
+
+public static int partition(int[] arr, int low, int high) {
+  int pivot = arr[high];
+  int i = low - 1;
+  for (int j = low; j < high; j++) {
+    if (arr[j] <= pivot) {
+      i++;
+      int temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
+    }
+  }
+  int temp = arr[i + 1];
+  arr[i + 1] = arr[high];
+  arr[high] = temp;
+  return i + 1;
+}`,
+  },
 ]
 
 export default function ExampleSelector({ selectedExample, onSelect }) {
