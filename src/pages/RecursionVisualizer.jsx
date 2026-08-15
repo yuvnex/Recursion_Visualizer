@@ -135,6 +135,56 @@ const simulators = {
     simulate(arr)
     return steps
   },
+
+  quickSort: ({ arr, low, high }) => {
+    const steps = []
+    let counter = 0
+    const currentArr = [...arr]
+
+    const simulate = (lo, hi, parentId = null) => {
+      const id = counter++
+      const isBase = lo >= hi
+      
+      steps.push({
+        type: 'call',
+        nodeId: id,
+        parentId,
+        label: `quickSort(${lo},${hi})`,
+        params: { low: lo, high: hi, arr: [...currentArr] },
+        isBaseCase: isBase,
+      })
+
+      if (isBase) {
+        steps.push({ type: 'return', nodeId: id, value: undefined, isBaseCase: true })
+        return { id }
+      }
+
+      // Partition
+      let pivot = currentArr[hi]
+      let i = lo - 1
+      for (let j = lo; j < hi; j++) {
+        if (currentArr[j] <= pivot) {
+          i++
+          let temp = currentArr[i]
+          currentArr[i] = currentArr[j]
+          currentArr[j] = temp
+        }
+      }
+      let temp = currentArr[i + 1]
+      currentArr[i + 1] = currentArr[hi]
+      currentArr[hi] = temp
+      const pivotIndex = i + 1
+
+      simulate(lo, pivotIndex - 1, id)
+      simulate(pivotIndex + 1, hi, id)
+
+      steps.push({ type: 'return', nodeId: id, value: undefined })
+      return { id }
+    }
+    
+    simulate(low, high)
+    return steps
+  },
 }
 
 const COMPLEXITY = {
@@ -144,6 +194,7 @@ const COMPLEXITY = {
   sumArray:     { time: 'O(n)',        space: 'O(n)' },
   power:        { time: 'O(n)',        space: 'O(n)' },
   mergeSort:    { time: 'O(n log n)',  space: 'O(n)' },
+  quickSort:    { time: 'O(n log n)',  space: 'O(log n)' },
 }
 
 export default function RecursionVisualizer() {
@@ -210,9 +261,9 @@ export default function RecursionVisualizer() {
       setStack(prev => [...prev, { id: step.nodeId, label: step.label, params: step.params }])
       // Point to the base-case condition line, or the recursive call line
       if (step.isBaseCase) {
-        setCurrentLine(findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)']))
+        setCurrentLine(findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)', 'if (low >= high)']))
       } else {
-        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort']))
+        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort', 'int pivotIndex = partition']))
       }
     } else {
       setExecutionPhase('returning')
@@ -221,9 +272,9 @@ export default function RecursionVisualizer() {
       setStack(prev => prev.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId))
       // Point to the actual return statement
       if (step.isBaseCase) {
-        setCurrentLine(findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;']))
+        setCurrentLine(findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;', 'return;']))
       } else {
-        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge(']))
+        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge(', 'quickSort(']))
       }
     }
   }, [])
@@ -287,9 +338,9 @@ export default function RecursionVisualizer() {
         nextNodes.push({ id: step.nodeId, parentId: step.parentId, label: step.label, params: step.params, isBaseCase: step.isBaseCase, returned: false })
         nextStack.push({ id: step.nodeId, label: step.label, params: step.params })
         if (step.isBaseCase) {
-          currLine = findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)'])
+          currLine = findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)', 'if (low >= high)'])
         } else {
-          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort'])
+          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort', 'int pivotIndex = partition'])
         }
       } else {
         phase = 'returning'
@@ -297,9 +348,9 @@ export default function RecursionVisualizer() {
         nextNodes = nextNodes.map(n => n.id === step.nodeId ? { ...n, returned: true, returnValue: step.value } : n)
         nextStack = nextStack.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId)
         if (step.isBaseCase) {
-          currLine = findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;'])
+          currLine = findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;', 'return;'])
         } else {
-          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge('])
+          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge(', 'quickSort('])
         }
       }
     }
