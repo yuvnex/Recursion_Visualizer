@@ -509,29 +509,37 @@ export default function RecursionVisualizer() {
           </motion.div>
         )}
 
-        {showVisualizer && isTreeExpanded && (
-          <div className="fixed inset-0 z-50 bg-background/95 p-4 md:p-6 backdrop-blur-sm">
-            <div className="h-full w-full">
-              <RecursionTree
-                nodes={nodes}
-                currentNodeId={currentNodeId}
-                executionPhase={executionPhase}
-                isExpanded={true}
-                onToggleExpand={toggleTreeExpand}
-                isRunning={isRunning}
-                isPaused={isPaused}
-                speed={speed}
-                onStart={handleStart}
-                onPause={handlePause}
-                onResume={handleResume}
-                onStep={handleStep}
-                onPrev={handlePrev}
-                onSpeedChange={setSpeed}
-                isComplete={isComplete}
-              />
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {showVisualizer && isTreeExpanded && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="fixed inset-0 z-50 bg-background/95 p-4 md:p-6 backdrop-blur-sm"
+            >
+              <div className="h-full w-full">
+                <RecursionTree
+                  nodes={nodes}
+                  currentNodeId={currentNodeId}
+                  executionPhase={executionPhase}
+                  isExpanded={true}
+                  onToggleExpand={toggleTreeExpand}
+                  isRunning={isRunning}
+                  isPaused={isPaused}
+                  speed={speed}
+                  onStart={handleStart}
+                  onPause={handlePause}
+                  onResume={handleResume}
+                  onStep={handleStep}
+                  onPrev={handlePrev}
+                  onSpeedChange={setSpeed}
+                  isComplete={isComplete}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>
