@@ -98,6 +98,10 @@
   .app-btn-secondary {
     @apply border border-border/60 bg-card text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-all duration-200;
   }
+
+  .app-btn-warning {
+    @apply border border-amber-500/30 bg-amber-50 text-amber-700 shadow-sm hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 transition-all duration-200;
+  }
 }
 
 @layer utilities {

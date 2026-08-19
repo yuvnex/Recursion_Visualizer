@@ -30,7 +30,7 @@ export default function ControlPanel({
               <Button
                 onClick={onPause}
                 variant="outline"
-                className="border-amber-500/30 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
+                className="app-btn-warning"
               >
                 <Pause className="mr-2 h-4 w-4" />
                 Pause
@@ -106,16 +106,14 @@ export default function ControlPanel({
         </div>
       </div>
 
-      {totalSteps > 0 && (
-        <div className="h-1 bg-muted/50 rounded-b-xl overflow-hidden">
-          <motion.div
-            className="h-full bg-primary rounded-r-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      )}
+      <div className="h-1 bg-muted/50 rounded-b-xl overflow-hidden">
+        <motion.div
+          className="h-full bg-primary rounded-r-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
 
       {complexity && (isRunning || isComplete) && (
         <div className="border-t border-border/60 bg-muted/30 px-5 py-3 flex items-center gap-6 font-mono text-xs text-muted-foreground">

@@ -247,7 +247,8 @@ export default function RecursionVisualizer() {
   const findLine = (patterns) => {
     const lines = codeRef.current.split('\n')
     for (const pattern of patterns) {
-      const idx = lines.findIndex(l => l.toLowerCase().includes(pattern.toLowerCase()))
+      const cleanPattern = pattern.toLowerCase().replace(/\s+/g, '')
+      const idx = lines.findIndex(l => l.toLowerCase().replace(/\s+/g, '').includes(cleanPattern))
       if (idx !== -1) return idx
     }
     return null
@@ -468,7 +469,7 @@ export default function RecursionVisualizer() {
               onStart={handleStart} onPause={handlePause} onResume={handleResume}
               onStep={handleStep} onPrev={handlePrev} onReset={handleReset} onSpeedChange={setSpeed}
               currentStep={currentStep} totalSteps={totalSteps} isComplete={isComplete}
-              complexity={COMPLEXITY[selectedExample?.id]}
+              complexity={mode === 'examples' ? COMPLEXITY[selectedExample?.id] : null}
             />
           </motion.div>
         )}
