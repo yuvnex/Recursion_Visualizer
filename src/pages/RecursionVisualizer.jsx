@@ -429,6 +429,11 @@ export default function RecursionVisualizer() {
     setCustomCodeData(null); setAnalysisError(null); handleReset()
   }, [handleReset])
 
+  const handleInputChange = useCallback((newInput) => {
+    setSelectedExample(prev => ({ ...prev, input: newInput }))
+    handleReset()
+  }, [handleReset])
+
   const handleModeChange = useCallback((newMode) => {
     setMode(newMode); handleReset(); setAnalysisError(null)
     if (newMode === 'examples') {
@@ -452,7 +457,7 @@ export default function RecursionVisualizer() {
           <AnimatePresence mode="wait">
             {mode === 'examples' ? (
               <motion.div key="examples" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                <ExampleSelector selectedExample={selectedExample} onSelect={handleSelectExample} />
+                <ExampleSelector selectedExample={selectedExample} onSelect={handleSelectExample} onInputChange={handleInputChange} />
               </motion.div>
             ) : (
               <motion.div key="custom" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>

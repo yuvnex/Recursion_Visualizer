@@ -1,14 +1,89 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-const formatInput = (input) => {
-  if (typeof input === 'number') return `n = ${input}`
-  return Object.entries(input)
-    .map(([k, v]) => `${k} = ${JSON.stringify(v)}`)
-    .join('   ')
+const NumberInput = ({ value, onChange }) => {
+  const [val, setVal] = useState(value);
+
+  useEffect(() => {
+    setVal(value);
+  }, [value]);
+
+  const handleCommit = () => {
+    const num = Number(val);
+    onChange(isNaN(num) ? 0 : num);
+  };
+
+  return (
+    <input 
+      type="number" 
+      value={val}
+      onChange={e => setVal(e.target.value)}
+      onBlur={handleCommit}
+      onKeyDown={e => { if (e.key === 'Enter') handleCommit(); }}
+      className="w-16 rounded-md bg-background px-2 py-1 text-sm outline-none border border-input focus:border-primary focus:ring-1 focus:ring-primary font-mono text-foreground"
+    />
+  )
+}
+
+const ArrayInput = ({ value, onChange }) => {
+  const [text, setText] = useState(value.join(', '));
+  
+  useEffect(() => {
+    setText(value.join(', '));
+  }, [value]);
+
+  const handleCommit = () => {
+    const arr = text.split(',').filter(s => s.trim() !== '').map(s => {
+      const n = Number(s.trim());
+      return isNaN(n) ? 0 : n;
+    });
+    onChange(arr);
+    setText(arr.join(', '));
+  };
+
+  return (
+    <div className="flex items-center">
+      <span className="font-mono text-sm text-muted-foreground mr-1">[</span>
+      <input 
+        type="text" 
+        value={text}
+        onChange={e => setText(e.target.value)}
+        onBlur={handleCommit}
+        onKeyDown={e => { if (e.key === 'Enter') handleCommit(); }}
+        className="w-48 rounded-md bg-background px-2 py-1 text-sm outline-none border border-input focus:border-primary focus:ring-1 focus:ring-primary font-mono text-foreground"
+      />
+      <span className="font-mono text-sm text-muted-foreground ml-1">]</span>
+    </div>
+  )
+}
+
+const InputEditor = ({ input, onChange }) => {
+  if (typeof input === 'number') {
+    return (
+      <div className="flex items-center gap-2">
+        <label className="font-mono text-sm font-medium text-muted-foreground">n =</label>
+        <NumberInput value={input} onChange={(val) => onChange(val)} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-4">
+      {Object.entries(input).map(([k, v]) => (
+        <div key={k} className="flex items-center gap-2">
+          <label className="font-mono text-sm font-medium text-muted-foreground">{k} =</label>
+          {Array.isArray(v) ? (
+            <ArrayInput value={v} onChange={(val) => onChange({ ...input, [k]: val })} />
+          ) : (
+            <NumberInput value={v} onChange={(val) => onChange({ ...input, [k]: val })} />
+          )}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export const EXAMPLES = [
@@ -170,7 +245,13 @@ public static int partition(int[] arr, int low, int high) {
   },
 ]
 
-export default function ExampleSelector({ selectedExample, onSelect }) {
+export default function ExampleSelector({ selectedExample, onSelect, onInputChange }) {
+  const handleInputUpdate = (newInput) => {
+    if (onInputChange) {
+      onInputChange(newInput)
+    }
+  }
+
   return (
     <Card className="app-panel overflow-hidden">
       <div className="bg-[#334155] text-white text-center py-2 text-[22px] tracking-wide font-sans z-10 shadow-sm relative flex items-center justify-center">
@@ -203,11 +284,14 @@ export default function ExampleSelector({ selectedExample, onSelect }) {
           <motion.div
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 rounded-xl border border-border/50 bg-muted/20 p-4 shadow-sm"
+            className="mt-6 rounded-xl border border-border/50 bg-muted/20 p-4 shadow-sm flex flex-wrap items-center gap-4"
           >
-            <p className="font-mono text-sm text-muted-foreground">
-              {formatInput(selectedExample.input)}
-            </p>
+            <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-muted/30 px-2 py-1 rounded">
+              <BookOpen className="w-4 h-4" />
+              Inputs
+            </div>
+            <div className="hidden sm:block w-[1px] h-6 bg-border/50"></div>
+            <InputEditor input={selectedExample.input} onChange={handleInputUpdate} />
           </motion.div>
         )}
       </div>
