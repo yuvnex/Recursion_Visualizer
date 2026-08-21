@@ -123,19 +123,7 @@ export default function CodeEditor({ code, onChange, currentLine, isRunning }) {
         </div>
       </div>
 
-      <div className="border-t border-border/60 bg-muted/30 px-5 py-3">
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold text-amber-500">➜</span>
-            <span>Current line</span>
-          </div>
-          <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
-          <span>
-            <span className="text-green-600 dark:text-green-400 font-medium">Green</span>: base case ·{' '}
-            <span className="text-blue-600 dark:text-blue-400 font-medium">Blue</span>: recursive call
-          </span>
-        </div>
-      </div>
+
     </Card>
   )
 }
