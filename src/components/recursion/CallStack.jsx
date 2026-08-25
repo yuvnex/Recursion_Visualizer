@@ -7,10 +7,10 @@ export default function CallStack({ stack, currentNodeId, executionPhase }) {
   const topRef = useRef(null);
 
   useEffect(() => {
-    // Scroll the top reference into view whenever the stack changes
-    if (topRef.current) {
-      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // Auto-scrolling disabled per user request
+    // if (topRef.current) {
+    //   topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // }
   }, [stack]);
 
   return (
