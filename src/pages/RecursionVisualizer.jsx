@@ -548,6 +548,11 @@ export default function RecursionVisualizer() {
         </AnimatePresence>
 
       </div>
+      
+      {/* Footer with license details */}
+      <footer className="w-full text-right pr-4 pb-4 mt-4 text-xs text-muted-foreground/50">
+        <p>&copy; {new Date().getFullYear()} Yuvanesh. MIT License.</p>
+      </footer>
     </div>
   )
 }
