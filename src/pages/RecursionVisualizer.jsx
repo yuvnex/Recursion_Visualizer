@@ -197,10 +197,12 @@ const COMPLEXITY = {
   quickSort:    { time: 'O(n log n)',  space: 'O(log n)' },
 }
 
-export default function RecursionVisualizer() {
+export default function RecursionVisualizer({ initialExampleId, children }) {
+  const initialExample = EXAMPLES.find(ex => ex.id === initialExampleId) || EXAMPLES[0];
+  
   const [mode, setMode] = useState('examples')
-  const [selectedExample, setSelectedExample] = useState(EXAMPLES[0])
-  const [code, setCode] = useState(EXAMPLES[0].code)
+  const [selectedExample, setSelectedExample] = useState(initialExample)
+  const [code, setCode] = useState(initialExample.code)
   const [nodes, setNodes] = useState([])
   const [stack, setStack] = useState([])
   const [currentNodeId, setCurrentNodeId] = useState(null)
@@ -221,7 +223,7 @@ export default function RecursionVisualizer() {
   const stepIndexRef = useRef(0)
   const animationRef = useRef(null)
   const isPausedRef = useRef(false)
-  const codeRef = useRef(EXAMPLES[0].code)
+  const codeRef = useRef(initialExample.code)
   // Keep a ref in sync so executeStep can always read the latest code without a stale closure
   const setCodeAndRef = (c) => { codeRef.current = c; setCode(c) }
 
@@ -437,9 +439,9 @@ export default function RecursionVisualizer() {
   const handleModeChange = useCallback((newMode) => {
     setMode(newMode); handleReset(); setAnalysisError(null)
     if (newMode === 'examples') {
-      setCodeAndRef(EXAMPLES[0].code); setSelectedExample(EXAMPLES[0]); setCustomCodeData(null)
+      setCodeAndRef(initialExample.code); setSelectedExample(initialExample); setCustomCodeData(null)
     }
-  }, [handleReset])
+  }, [handleReset, initialExample])
 
   const showVisualizer = mode === 'examples' || !!customCodeData
   const toggleTreeExpand = useCallback(() => setIsTreeExpanded(prev => !prev), [])
@@ -549,8 +551,17 @@ export default function RecursionVisualizer() {
 
       </div>
       
+      {/* SEO/Article Content */}
+      {children && (
+        <div className="w-full border-t border-border/40 bg-muted/10 py-16 mt-8">
+          <div className="mx-auto max-w-4xl px-6 md:px-8">
+            {children}
+          </div>
+        </div>
+      )}
+      
       {/* Footer with license details */}
-      <footer className="w-full text-right pr-4 pb-4 mt-4 text-xs text-muted-foreground/50">
+      <footer className="w-full text-center py-6 border-t border-border/40 text-sm text-muted-foreground/60 bg-background">
         <p>&copy; {new Date().getFullYear()} Yuvanesh. MIT License.</p>
       </footer>
     </div>
