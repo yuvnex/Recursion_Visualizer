@@ -139,12 +139,6 @@ Contributions are welcome!
 1. Edit `src/lib/codeRunner.js`.
 2. Update the `transpileToJS()` switch statement and add new language detection patterns.
 
----
 
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
 
 Built with ❤️ to make learning algorithms more intuitive and accessible.
