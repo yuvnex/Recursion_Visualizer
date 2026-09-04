@@ -1,144 +1,196 @@
+<div align="center">
+
 # 🔄 Recursion Visualizer
 
-![Recursion Visualizer](https://img.shields.io/badge/Status-Active-brightgreen.svg)
-![React](https://img.shields.io/badge/React-18-blue.svg)
-![Vite](https://img.shields.io/badge/Vite-Ready-purple.svg)
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
+**Watch recursion come alive — one call at a time.**
 
-An interactive, web-based tool designed to help developers and students master recursion. Watch the call tree build in real-time, see the call stack grow and shrink, and understand complex recursive execution flows from the ground up.
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)](https://github.com/yuvnex/Recursion_Visualizer)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-Ready-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-ff69b4?style=for-the-badge)](./CONTRIBUTING.md)
+
+An interactive, browser-based tool that transforms abstract recursive algorithms into stunning visual experiences. Watch the call tree build in real-time, see the call stack grow and shrink, and finally *get* recursion.
+
+[**Live Demo**](https://github.com/yuvnex/Recursion_Visualizer) · [**Report a Bug**](https://github.com/yuvnex/Recursion_Visualizer/issues) · [**Request a Feature**](https://github.com/yuvnex/Recursion_Visualizer/issues)
+
+</div>
+
+---
+
+## 📸 Gallery
+
+| Factorial | Fibonacci |
+|:---------:|:---------:|
+| ![Factorial Visualization](./public/hr-reference-factorial.png) | ![Fibonacci Visualization](./public/hr-reference-fibonacci.png) |
+| *Linear recursion with a single call chain* | *Exponential branching with overlapping subproblems* |
 
 ---
 
 ## ✨ Features
 
-- **Interactive Visualizations**: Real-time animation of recursive calls and returns.
-- **Dynamic Call Tree**: Visual representation showing parent-child relationships and execution phases (calling, returning, base case).
-- **Live Call Stack**: Tracks the current stack of active function calls, including parameters and return values.
-- **Built-in Examples**: Includes classic algorithms like Factorial, Fibonacci, Binary Search, Merge Sort, and Quick Sort.
-- **Custom Code Execution**: Write your own recursive functions and visualize their execution locally.
-- **Multi-Language Support**: Supports JavaScript, Python, Java, and C/C++ (transpiled and executed securely).
-- **100% Offline**: All code execution and analysis happen locally in your browser. No external API keys required!
-- **Professional UI**: Clean, modern design with responsive layouts and smooth micro-animations.
-
----
-
-## Gallery
-
-![Factorial Visualization](./public/hr-reference-factorial.png)
-*Figure 1: Factorial algorithm recursion tree, call stack, and source code visualization.*
-
-![Fibonacci Visualization](./public/hr-reference-fibonacci.png)
-*Figure 2: Fibonacci algorithm recursion tree showcasing dynamic branching.*
+| Feature | Description |
+|---|---|
+| 🌳 **Dynamic Call Tree** | Nodes reveal parent-child relationships and execution phases in real-time |
+| 📚 **Live Call Stack** | Tracks active frames, parameters, and return values as execution unfolds |
+| ▶️ **Step-by-Step Playback** | Pause, rewind, and replay any point in the execution |
+| 🧩 **Built-in Examples** | Factorial, Fibonacci, Binary Search, Merge Sort, Quick Sort — ready to go |
+| ✏️ **Custom Code Editor** | Write your own recursive function and visualize it instantly |
+| 🌐 **Multi-Language Support** | JavaScript, Python, Java, and C/C++ (transpiled locally) |
+| 🔒 **100% Offline** | All execution and analysis happen in your browser — no server, no API keys |
+| 🎨 **Professional UI** | Responsive layouts, smooth animations, and a clean modern design |
 
 ---
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v16 or higher
+- npm or yarn
+
 ### Installation
 
-Clone the repository and install dependencies:
-
 ```bash
+# 1. Clone the repository
 git clone https://github.com/yuvnex/Recursion_Visualizer.git
+
+# 2. Navigate into the project
 cd Recursion_Visualizer
+
+# 3. Install dependencies
 npm install
-```
 
-### Development
-
-Start the Vite development server:
-
-```bash
+# 4. Start the development server
 npm run dev
 ```
 
-Open your browser to [http://localhost:5173](http://localhost:5173) and start visualizing!
+Open your browser to **[http://localhost:5173](http://localhost:5173)** and start visualizing!
 
-### Build for Production
+### Production Build
 
 ```bash
-npm run build
-npm run preview
+npm run build    # Compile and optimize for production
+npm run preview  # Preview the production build locally
 ```
 
 ---
 
 ## 💡 How to Use
 
-### 1. Built-in Examples
-Select from a variety of pre-loaded examples (e.g., Fibonacci, Quick Sort, Binary Search) using the sidebar to immediately see how they execute.
+### Option 1 — Built-in Examples
 
-### 2. Visualize Custom Code
-1. Switch to **"Custom Code"** mode.
-2. Select your preferred programming language.
-3. Write or paste your recursive function. Ensure your code has:
-   - A clear **recursive function** definition.
-   - A **base case** to terminate execution.
-   - At least one **recursive call**.
-   - A **function invocation** at the very end of the code snippet.
-4. Click **"Analyze & Visualize"**.
+Select any pre-loaded algorithm from the sidebar (Fibonacci, Quick Sort, Binary Search, etc.) to immediately see its full execution tree rendered step by step.
 
-**Example (JavaScript):**
+### Option 2 — Custom Code
+
+1. Switch to **"Custom Code"** mode in the sidebar.
+2. Choose your preferred language from the dropdown.
+3. Write or paste your recursive function. Make sure it includes:
+   - A **base case** to terminate execution
+   - At least one **recursive call**
+   - A **function invocation** at the end of the snippet
+4. Click **"Analyze & Visualize"** and watch it unfold.
+
+**Example — Factorial in JavaScript:**
+
 ```javascript
 function factorial(n) {
   if (n <= 1) {
-    return 1;
+    return 1; // Base case
   }
-  return n * factorial(n - 1);
+  return n * factorial(n - 1); // Recursive call
 }
 
-// Ensure you call the function at the end!
-factorial(5);
+factorial(5); // Invoke at the end!
 ```
 
-### 3. Understanding the Visualization
+### Reading the Visualization
 
-- **Recursion Tree:** Colored nodes indicate the execution phase:
-  - 🟠 **Amber**: Currently executing (calling)
-  - 🟣 **Purple**: Currently returning
-  - 🟢 **Green**: Base cases
-  - ⚫ **Gray**: Completed calls
-- **Call Stack:** Updates as functions are called and return, displaying parameters and return values.
-- **Code Editor:** Highlights the current line during execution (Green for base cases, Blue for recursive calls).
+The recursion tree uses color-coded nodes to show exactly where execution is at any given moment:
+
+| Color | Phase | Meaning |
+|:-----:|-------|---------|
+| 🟠 **Amber** | Calling | Currently executing this frame |
+| 🟣 **Purple** | Returning | Unwinding — returning a value |
+| 🟢 **Green** | Base Case | Recursion terminates here |
+| ⚫ **Gray** | Complete | Frame fully resolved |
+
+> **Tip:** The **Code Editor** panel highlights the active line in sync with each step — green for base cases, blue for recursive calls.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## 🛠️ Architecture
+
+```
+src/
+├── api/
+│   └── llmClient.js          # Unified analysis interface (delegates to local engine)
+├── components/
+│   └── recursion/
+│       └── ExampleSelector.jsx   # Built-in algorithm examples registry
+└── lib/
+    ├── codeRunner.js         # Transpilation engine + sandboxed JS execution + tracing
+    └── recursionTreeBuilder.js   # Tree structure computation + execution timeline
+```
 
 ### Tech Stack
-- **Frontend Framework:** React 18, Vite
-- **Styling & UI:** Tailwind CSS, Radix UI, Framer Motion (for smooth animations)
-- **Execution Engine:** Custom JavaScript sandbox transpiler and code analyzer
 
-### Core Modules
-- **`src/lib/codeRunner.js`**: Code analysis, language transpilation (Python/Java/C++ to JS), and sandboxed execution engine with execution tracing.
-- **`src/lib/recursionTreeBuilder.js`**: Computes tree structures, validates consistency, and generates the execution timeline.
-- **`src/api/llmClient.js`**: Provides a unified analysis interface, delegating entirely to the local execution engine.
+| Layer | Technology |
+|---|---|
+| **Framework** | React 18 + Vite |
+| **Styling** | Tailwind CSS + Radix UI |
+| **Animations** | Framer Motion |
+| **Execution** | Custom JS sandbox transpiler (no external runtime) |
 
 ---
 
-## ⚠️ Limitations & Known Issues
+## ⚠️ Known Limitations
 
-To ensure a smooth browser experience, there are a few built-in safeguards:
-- **Maximum Recursion Depth:** Execution is capped at 500 calls to prevent browser crashes.
-- **Simple Recursion Only:** Highly complex nested function calls across multiple independent methods may not trace correctly.
-- **Single Function Trace:** The engine currently traces only one primary recursive function per execution.
-- **Parameter Inference:** Best suited for simpler types (primitives, basic arrays, objects). Highly complex nested objects might not render fully in the stack trace.
+These safeguards exist to ensure smooth performance in the browser:
+
+- **Max recursion depth** is capped at **500 calls** to prevent stack overflows.
+- **Single function tracing** — the engine traces one primary recursive function per run.
+- **Simple recursion only** — complex cross-function mutual recursion may not trace correctly.
+- **Parameter rendering** — best suited for primitives and basic arrays; deeply nested objects may render partially.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! 
+Contributions are warmly welcome! Here are two common ways to get involved:
 
-**To add a new built-in example:**
-1. Open `src/components/recursion/ExampleSelector.jsx`.
-2. Add a new object to the `EXAMPLES` array with a unique `id`, `name`, `difficulty`, `description`, `input`, and `code`.
+### ➕ Add a New Built-in Example
 
-**To extend language support:**
-1. Edit `src/lib/codeRunner.js`.
-2. Update the `transpileToJS()` switch statement and add new language detection patterns.
+Open `src/components/recursion/ExampleSelector.jsx` and add an entry to the `EXAMPLES` array:
 
+```javascript
+{
+  id: "your-algorithm",
+  name: "Your Algorithm",
+  difficulty: "Medium",       // "Easy" | "Medium" | "Hard"
+  description: "Brief description of what this algorithm does.",
+  input: 6,
+  code: `function yourAlgorithm(n) { ... }\nyourAlgorithm(6);`
+}
+```
 
+### 🌐 Extend Language Support
+
+Open `src/lib/codeRunner.js` and update the `transpileToJS()` switch statement with a new case for your language, including detection patterns and transpilation logic.
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for details.
+
+---
+
+<div align="center">
 
 Built with ❤️ to make learning algorithms more intuitive and accessible.
+
+*If this project helped you, consider giving it a ⭐ on GitHub!*
+
+</div>
