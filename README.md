@@ -181,16 +181,3 @@ Open `src/lib/codeRunner.js` and update the `transpileToJS()` switch statement w
 
 ---
 
-## 📄 License
-
-Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for details.
-
----
-
-<div align="center">
-
-Built with ❤️ to make learning algorithms more intuitive and accessible.
-
-*If this project helped you, consider giving it a ⭐ on GitHub!*
-
-</div>
