@@ -11,6 +11,11 @@ function App() {
     <HelmetProvider>
       <Router>
         <Routes>
+          {/* Shareable Visualization Routes */}
+          <Route path="/visualize/:slug" element={<RecursionVisualizer />} />
+          <Route path="/visualize" element={<RecursionVisualizer />} />
+
+          {/* SEO Landing Page Routes */}
           {seoRoutes.map((route) => (
             <Route 
               key={route.path} 
@@ -18,6 +23,8 @@ function App() {
               element={<SeoPageWrapper route={route} />} 
             />
           ))}
+
+          {/* Fallback */}
           <Route path="*" element={<RecursionVisualizer />} />
         </Routes>
         <Toaster />

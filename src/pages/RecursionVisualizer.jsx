@@ -1,6 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brackets } from 'lucide-react'
+import { Share2, Check, Copy, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/use-toast'
 import { llmClient } from '@/api/llmClient'
 
 import CodeEditor from '@/components/recursion/CodeEditor'
@@ -10,196 +13,22 @@ import ControlPanel from '@/components/recursion/ControlPanel'
 import ExampleSelector, { EXAMPLES } from '@/components/recursion/ExampleSelector'
 import ModeToggle from '@/components/recursion/ModeToggle'
 import CustomCodePanel from '@/components/recursion/CustomCodePanel'
-
-const simulators = {
-  factorial: (n) => {
-    const steps = []
-    const simulate = (n, nodeId, parentId) => {
-      steps.push({ type: 'call', nodeId, parentId, label: `factorial(${n})`, params: { n }, isBaseCase: n <= 1 })
-      if (n <= 1) { steps.push({ type: 'return', nodeId, value: 1, isBaseCase: true }); return 1 }
-      const childId = steps.length
-      const r = simulate(n - 1, childId, nodeId)
-      const result = n * r
-      steps.push({ type: 'return', nodeId, value: result })
-      return result
-    }
-    simulate(n, 0, null)
-    return steps
-  },
-
-  fibonacci: (n) => {
-    const steps = []
-    let counter = 0
-    const simulate = (n, parentId = null) => {
-      const id = counter++
-      const isBase = n <= 1
-      steps.push({ type: 'call', nodeId: id, parentId, label: `fib(${n})`, params: { n }, isBaseCase: isBase })
-      if (n <= 0) { steps.push({ type: 'return', nodeId: id, value: 0, isBaseCase: true }); return { id, result: 0 } }
-      if (n === 1) { steps.push({ type: 'return', nodeId: id, value: 1, isBaseCase: true }); return { id, result: 1 } }
-      const l = simulate(n - 1, id)
-      const r = simulate(n - 2, id)
-      const result = l.result + r.result
-      steps.push({ type: 'return', nodeId: id, value: result })
-      return { id, result }
-    }
-    simulate(n)
-    return steps
-  },
-
-  binarySearch: ({ arr, target, low, high }) => {
-    const steps = []
-    let counter = 0
-    const simulate = (lo, hi, parentId = null) => {
-      const id = counter++
-      const isBase = lo > hi
-      steps.push({ type: 'call', nodeId: id, parentId, label: `search(${lo},${hi})`, params: { low: lo, high: hi }, isBaseCase: isBase })
-      if (lo > hi) { steps.push({ type: 'return', nodeId: id, value: -1, isBaseCase: true }); return { id, result: -1 } }
-      const mid = Math.floor((lo + hi) / 2)
-      if (arr[mid] === target) { steps.push({ type: 'return', nodeId: id, value: mid, isBaseCase: true }); return { id, result: mid } }
-      const child = arr[mid] > target ? simulate(lo, mid - 1, id) : simulate(mid + 1, hi, id)
-      steps.push({ type: 'return', nodeId: id, value: child.result })
-      return { id, result: child.result }
-    }
-    simulate(low, high)
-    return steps
-  },
-
-  sumArray: ({ arr, index }) => {
-    const steps = []
-    let counter = 0
-    const simulate = (idx, parentId = null) => {
-      const id = counter++
-      const isBase = idx >= arr.length
-      steps.push({ type: 'call', nodeId: id, parentId, label: `sum(${idx})`, params: { index: idx, value: arr[idx] }, isBaseCase: isBase })
-      if (isBase) { steps.push({ type: 'return', nodeId: id, value: 0, isBaseCase: true }); return { id, result: 0 } }
-      const child = simulate(idx + 1, id)
-      const result = arr[idx] + child.result
-      steps.push({ type: 'return', nodeId: id, value: result })
-      return { id, result }
-    }
-    simulate(index)
-    return steps
-  },
-
-  power: ({ base, exp }) => {
-    const steps = []
-    let counter = 0
-    const simulate = (e, parentId = null) => {
-      const id = counter++
-      const isBase = e === 0
-      steps.push({ type: 'call', nodeId: id, parentId, label: `power(${base},${e})`, params: { base, exp: e }, isBaseCase: isBase })
-      if (isBase) { steps.push({ type: 'return', nodeId: id, value: 1, isBaseCase: true }); return { id, result: 1 } }
-      const child = simulate(e - 1, id)
-      const result = base * child.result
-      steps.push({ type: 'return', nodeId: id, value: result })
-      return { id, result }
-    }
-    simulate(exp)
-    return steps
-  },
-
-  mergeSort: ({ arr }) => {
-    const steps = []
-    let counter = 0
-    const simulate = (subArr, parentId = null) => {
-      const id = counter++
-      const isBase = subArr.length <= 1
-      steps.push({
-        type: 'call',
-        nodeId: id,
-        parentId,
-        label: `mergeSort([${subArr.join(',')}])`,
-        params: { arr: [...subArr] },
-        isBaseCase: isBase,
-      })
-      if (isBase) {
-        steps.push({ type: 'return', nodeId: id, value: [...subArr], isBaseCase: true })
-        return { id, result: [...subArr] }
-      }
-      const mid = Math.floor(subArr.length / 2)
-      const leftChild = simulate(subArr.slice(0, mid), id)
-      const rightChild = simulate(subArr.slice(mid), id)
-      // merge
-      const merged = []
-      let i = 0, j = 0
-      const l = leftChild.result, r = rightChild.result
-      while (i < l.length && j < r.length) {
-        if (l[i] <= r[j]) merged.push(l[i++])
-        else merged.push(r[j++])
-      }
-      while (i < l.length) merged.push(l[i++])
-      while (j < r.length) merged.push(r[j++])
-      steps.push({ type: 'return', nodeId: id, value: merged })
-      return { id, result: merged }
-    }
-    simulate(arr)
-    return steps
-  },
-
-  quickSort: ({ arr, low, high }) => {
-    const steps = []
-    let counter = 0
-    const currentArr = [...arr]
-
-    const simulate = (lo, hi, parentId = null) => {
-      const id = counter++
-      const isBase = lo >= hi
-      
-      steps.push({
-        type: 'call',
-        nodeId: id,
-        parentId,
-        label: `quickSort(${lo},${hi})`,
-        params: { low: lo, high: hi, arr: [...currentArr] },
-        isBaseCase: isBase,
-      })
-
-      if (isBase) {
-        steps.push({ type: 'return', nodeId: id, value: undefined, isBaseCase: true })
-        return { id }
-      }
-
-      // Partition
-      let pivot = currentArr[hi]
-      let i = lo - 1
-      for (let j = lo; j < hi; j++) {
-        if (currentArr[j] <= pivot) {
-          i++
-          let temp = currentArr[i]
-          currentArr[i] = currentArr[j]
-          currentArr[j] = temp
-        }
-      }
-      let temp = currentArr[i + 1]
-      currentArr[i + 1] = currentArr[hi]
-      currentArr[hi] = temp
-      const pivotIndex = i + 1
-
-      simulate(lo, pivotIndex - 1, id)
-      simulate(pivotIndex + 1, hi, id)
-
-      steps.push({ type: 'return', nodeId: id, value: undefined })
-      return { id }
-    }
-    
-    simulate(low, high)
-    return steps
-  },
-}
-
-const COMPLEXITY = {
-  factorial:    { time: 'O(n)',        space: 'O(n)' },
-  fibonacci:    { time: 'O(2ⁿ)',       space: 'O(n)' },
-  binarySearch: { time: 'O(log₂ n)',   space: 'O(log₂ n)' },
-  sumArray:     { time: 'O(n)',        space: 'O(n)' },
-  power:        { time: 'O(n)',        space: 'O(n)' },
-  mergeSort:    { time: 'O(n log n)',  space: 'O(n)' },
-  quickSort:    { time: 'O(n log n)',  space: 'O(log n)' },
-}
+import { 
+  getAlgorithmByIdOrSlug, 
+  algorithmSimulators, 
+  ALGORITHM_COMPLEXITY 
+} from '@/lib/algorithmData'
 
 export default function RecursionVisualizer({ initialExampleId, children }) {
-  const initialExample = EXAMPLES.find(ex => ex.id === initialExampleId) || EXAMPLES[0];
-  
+  const { slug } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { toast } = useToast()
+
+  // Determine initial algorithm from route param :slug, or prop initialExampleId, or default
+  const targetIdOrSlug = slug || initialExampleId
+  const initialExample = getAlgorithmByIdOrSlug(targetIdOrSlug)
+
   const [mode, setMode] = useState('examples')
   const [selectedExample, setSelectedExample] = useState(initialExample)
   const [code, setCode] = useState(initialExample.code)
@@ -218,16 +47,36 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisError, setAnalysisError] = useState(null)
   const [isTreeExpanded, setIsTreeExpanded] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const stepsRef = useRef([])
   const stepIndexRef = useRef(0)
   const animationRef = useRef(null)
   const isPausedRef = useRef(false)
   const codeRef = useRef(initialExample.code)
+
   // Keep a ref in sync so executeStep can always read the latest code without a stale closure
-  const setCodeAndRef = (c) => { codeRef.current = c; setCode(c) }
+  const setCodeAndRef = (c) => { 
+    codeRef.current = c
+    setCode(c) 
+  }
+
+  // Update example if route slug or initialExampleId changes
+  useEffect(() => {
+    if (targetIdOrSlug) {
+      const match = getAlgorithmByIdOrSlug(targetIdOrSlug)
+      if (match && match.id !== selectedExample?.id) {
+        setSelectedExample(match)
+        setCodeAndRef(match.code)
+        setCustomCodeData(null)
+        setAnalysisError(null)
+        handleReset()
+      }
+    }
+  }, [targetIdOrSlug]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { isPausedRef.current = isPaused }, [isPaused])
+  
   useEffect(() => {
     if (!isTreeExpanded) return undefined
     const previousOverflow = document.body.style.overflow
@@ -264,9 +113,19 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
       setStack(prev => [...prev, { id: step.nodeId, label: step.label, params: step.params }])
       // Point to the base-case condition line, or the recursive call line
       if (step.isBaseCase) {
-        setCurrentLine(findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)', 'if (low >= high)']))
+        setCurrentLine(findLine([
+          'if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 
+          'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 
+          'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)', 
+          'if (low >= high)', 'if (row == n)', 'if (row === n)', 'if (index == arr.length)'
+        ]))
       } else {
-        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort', 'int pivotIndex = partition']))
+        setCurrentLine(findLine([
+          'return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 
+          'return arr[index]', 'return base *', 'int[] left = mergeSort', 
+          'let left = mergeSort', 'left = mergeSort', 'int pivotIndex = partition',
+          'if (solveNQueens', 'solveNQueens(', 'generateSubsets('
+        ]))
       }
     } else {
       setExecutionPhase('returning')
@@ -275,9 +134,16 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
       setStack(prev => prev.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId))
       // Point to the actual return statement
       if (step.isBaseCase) {
-        setCurrentLine(findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;', 'return;']))
+        setCurrentLine(findLine([
+          'return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 
+          'return mid;', 'return true;', 'return false;', 'return;'
+        ]))
       } else {
-        setCurrentLine(findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge(', 'quickSort(']))
+        setCurrentLine(findLine([
+          'return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 
+          'return arr[index]', 'return base *', 'return merge(', 'quickSort(',
+          'return true;', 'return false;', 'return;'
+        ]))
       }
     }
   }, [])
@@ -296,7 +162,7 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
 
   const getSteps = useCallback(() => {
     if (mode === 'custom' && customCodeData) return customCodeData.steps
-    const sim = simulators[selectedExample.id]
+    const sim = algorithmSimulators[selectedExample?.id] || algorithmSimulators[selectedExample?.slug]
     return sim ? sim(selectedExample.input) : []
   }, [mode, selectedExample, customCodeData])
 
@@ -341,9 +207,19 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
         nextNodes.push({ id: step.nodeId, parentId: step.parentId, label: step.label, params: step.params, isBaseCase: step.isBaseCase, returned: false })
         nextStack.push({ id: step.nodeId, label: step.label, params: step.params })
         if (step.isBaseCase) {
-          currLine = findLine(['if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)', 'if (low >= high)'])
+          currLine = findLine([
+            'if (n <= 1)', 'if (n <= 0)', 'if (n == 0)', 'if (n === 0)', 
+            'if (n === 1)', 'if (n == 1)', 'if (low > high)', 'if (index >=', 
+            'if (exp === 0)', 'if (exp == 0)', 'if (arr.length <= 1)', 
+            'if (low >= high)', 'if (row == n)', 'if (row === n)', 'if (index == arr.length)'
+          ])
         } else {
-          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'int[] left = mergeSort', 'let left = mergeSort', 'left = mergeSort', 'int pivotIndex = partition'])
+          currLine = findLine([
+            'return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 
+            'return arr[index]', 'return base *', 'int[] left = mergeSort', 
+            'let left = mergeSort', 'left = mergeSort', 'int pivotIndex = partition',
+            'if (solveNQueens', 'solveNQueens(', 'generateSubsets('
+          ])
         }
       } else {
         phase = 'returning'
@@ -351,9 +227,16 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
         nextNodes = nextNodes.map(n => n.id === step.nodeId ? { ...n, returned: true, returnValue: step.value } : n)
         nextStack = nextStack.map(s => s.id === step.nodeId ? { ...s, returnValue: step.value } : s).filter(s => s.id !== step.nodeId)
         if (step.isBaseCase) {
-          currLine = findLine(['return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 'return mid;', 'return;'])
+          currLine = findLine([
+            'return 1;', 'return 0;', 'return -1;', 'return arr;', 'return n;', 
+            'return mid;', 'return true;', 'return false;', 'return;'
+          ])
         } else {
-          currLine = findLine(['return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 'return arr[index]', 'return base *', 'return merge(', 'quickSort('])
+          currLine = findLine([
+            'return n *', 'return fibonacci', 'return fib(', 'return binarySearch', 
+            'return arr[index]', 'return base *', 'return merge(', 'quickSort(',
+            'return true;', 'return false;', 'return;'
+          ])
         }
       }
     }
@@ -427,9 +310,22 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
   }, [])
 
   const handleSelectExample = useCallback((example) => {
-    setSelectedExample(example); setCodeAndRef(example.code)
-    setCustomCodeData(null); setAnalysisError(null); handleReset()
-  }, [handleReset])
+    setSelectedExample(example)
+    setCodeAndRef(example.code)
+    setCustomCodeData(null)
+    setAnalysisError(null)
+    handleReset()
+
+    // Automatically sync browser URL to the clicked example's dedicated SEO or visualization route
+    if (location.pathname.startsWith('/visualize/')) {
+      navigate(`/visualize/${example.slug}`)
+    } else {
+      const targetPath = example.seoPath || `/visualize/${example.slug}`
+      if (location.pathname !== targetPath) {
+        navigate(targetPath)
+      }
+    }
+  }, [handleReset, location.pathname, navigate])
 
   const handleInputChange = useCallback((newInput) => {
     setSelectedExample(prev => ({ ...prev, input: newInput }))
@@ -437,11 +333,33 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
   }, [handleReset])
 
   const handleModeChange = useCallback((newMode) => {
-    setMode(newMode); handleReset(); setAnalysisError(null)
+    setMode(newMode)
+    handleReset()
+    setAnalysisError(null)
     if (newMode === 'examples') {
-      setCodeAndRef(initialExample.code); setSelectedExample(initialExample); setCustomCodeData(null)
+      setCodeAndRef(initialExample.code)
+      setSelectedExample(initialExample)
+      setCustomCodeData(null)
     }
   }, [handleReset, initialExample])
+
+  // Share Link handler
+  const handleCopyShareLink = useCallback(() => {
+    const slugToShare = selectedExample?.slug || 'fibonacci'
+    const shareUrl = `${window.location.origin}/visualize/${slugToShare}`
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true)
+      toast({
+        title: "Link copied!",
+        description: `Direct visualization URL copied: ${shareUrl}`,
+        duration: 3000,
+      })
+      setTimeout(() => setCopied(false), 2500)
+    }).catch(err => {
+      console.error("Clipboard copy error:", err)
+    })
+  }, [selectedExample, toast])
 
   const showVisualizer = mode === 'examples' || !!customCodeData
   const toggleTreeExpand = useCallback(() => setIsTreeExpanded(prev => !prev), [])
@@ -451,8 +369,36 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
 
       <div className="relative z-10 mx-auto max-w-[1840px] px-4 py-6 md:px-8 md:py-8">
 
-        <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        {/* Top Control Bar with ModeToggle and Share Button */}
+        <motion.div 
+          className="mb-5 flex flex-wrap items-center justify-between gap-3" 
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.1 }}
+        >
           <ModeToggle mode={mode} onModeChange={handleModeChange} />
+
+          <div className="flex items-center gap-2">
+            <Button
+              id="share-button"
+              onClick={handleCopyShareLink}
+              variant="outline"
+              className="app-btn-secondary relative flex items-center gap-2 px-4 py-2 font-medium shadow-sm transition-all duration-200 hover:border-primary/50"
+              title="Copy shareable link for this visualization"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Link copied!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="h-4 w-4 text-primary" />
+                  <span>Share</span>
+                </>
+              )}
+            </Button>
+          </div>
         </motion.div>
 
         <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
@@ -476,7 +422,7 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
               onStart={handleStart} onPause={handlePause} onResume={handleResume}
               onStep={handleStep} onPrev={handlePrev} onReset={handleReset} onSpeedChange={setSpeed}
               currentStep={currentStep} totalSteps={totalSteps} isComplete={isComplete}
-              complexity={mode === 'examples' ? COMPLEXITY[selectedExample?.id] : null}
+              complexity={mode === 'examples' ? (ALGORITHM_COMPLEXITY[selectedExample?.id] || ALGORITHM_COMPLEXITY[selectedExample?.slug]) : null}
             />
           </motion.div>
         )}
@@ -551,18 +497,9 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
 
       </div>
       
-      {/* SEO/Article Content */}
-      {children && (
-        <div className="w-full border-t border-border/40 bg-muted/10 py-16 mt-8">
-          <div className="mx-auto max-w-4xl px-6 md:px-8">
-            {children}
-          </div>
-        </div>
-      )}
-      
       {/* Footer with license details */}
       <footer className="w-full text-center py-6 border-t border-border/40 text-sm text-muted-foreground/60 bg-background">
-        <p>&copy; {new Date().getFullYear()} Yuvanesh. MIT License.</p>
+        <p>&copy; {new Date().getFullYear()} Recursify. MIT License.</p>
       </footer>
     </div>
   )
